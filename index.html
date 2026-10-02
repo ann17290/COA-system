@@ -6,7 +6,7 @@
 <title>ระบบจัดการ COA อัจฉริยะ - PGI Foods</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#F6F4EE; --paper:#FFFFFF; --ink:#1B2A2E; --ink-soft:#5B6B6C;
@@ -14,39 +14,58 @@
   --line:#DCD8CC; --line-soft:#EAE7DC;
 }
 *{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Thai',sans-serif;min-height:100vh;}
-.mono{font-family:'IBM Plex Mono',monospace;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Angsana New', 'Sarabun', 'TH Sarabun New', sans-serif;
+  font-size:16px;
+  line-height:1.25;
+  min-height:100vh;
+}
+.mono{font-family:'Angsana New', 'Sarabun', monospace;}
 .shell{display:flex;min-height:100vh;}
-nav.side{width:235px;flex:none;background:var(--teal-deep);color:#EAF3F1;padding:20px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;}
-nav.side .brand{font-weight:700;font-size:15px;margin-bottom:2px;}
-nav.side .brand small{display:block;font-weight:400;font-size:11px;color:#A9C7C3;margin-top:3px;}
-nav.side ul{list-style:none;padding:0;margin:20px 0 0;display:flex;flex-direction:column;gap:3px;}
-nav.side button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;font-size:13px;color:#CFE3E0;width:100%;box-sizing:border-box;}
+nav.side{width:250px;flex:none;background:var(--teal-deep);color:#EAF3F1;padding:18px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+nav.side .brand{font-weight:700;font-size:18px;margin-bottom:2px;}
+nav.side .brand small{display:block;font-weight:400;font-size:13px;color:#A9C7C3;margin-top:2px;}
+nav.side ul{list-style:none;padding:0;margin:18px 0 0;display:flex;flex-direction:column;gap:3px;}
+nav.side button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;font-size:15px;color:#CFE3E0;width:100%;box-sizing:border-box;}
 nav.side button:hover{background:rgba(255,255,255,.08);}
 nav.side button.active{background:#EAF3F1;color:var(--teal-deep);font-weight:700;}
-main{flex:1;padding:24px 30px;max-width:1180px;}
-h1.page{font-size:20px;margin:0 0 4px;font-weight:700;}
-p.sub{margin:0 0 20px;color:var(--ink-soft);font-size:13.5px;}
-.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:18px;}
-.card h3{margin:0 0 12px;font-size:14px;font-weight:600;}
-.grid-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;}
-.stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
-.stat .n{font-size:24px;font-weight:700;line-height:1.1;}
-.stat .l{font-size:12px;color:var(--ink-soft);margin-top:4px;}
-.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px;}
-.form-grid label{font-size:12px;color:var(--ink-soft);display:block;margin-bottom:4px;font-weight:500;}
-.form-grid input, .form-grid select{width:100%;font-family:inherit;font-size:13px;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);}
-button.btn{font-family:inherit;font-size:13px;padding:8px 14px;border-radius:7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;}
+main{flex:1;padding:20px 28px;max-width:1280px;}
+h1.page{font-size:24px;margin:0 0 4px;font-weight:700;}
+p.sub{margin:0 0 18px;color:var(--ink-soft);font-size:15px;}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px;}
+.card h3{margin:0 0 10px;font-size:17px;font-weight:700;}
+.grid-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px;}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px;}
+.stat .n{font-size:28px;font-weight:700;line-height:1.1;}
+.stat .l{font-size:14px;color:var(--ink-soft);margin-top:2px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 14px;margin-bottom:12px;}
+.form-grid label{font-size:14px;color:var(--ink-soft);display:block;margin-bottom:2px;font-weight:600;}
+.form-grid input, .form-grid select{width:100%;font-family:inherit;font-size:15px;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);}
+button.btn{font-family:inherit;font-size:15px;padding:6px 14px;border-radius:7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;}
 button.primary{background:var(--teal);color:#fff;border-color:var(--teal);font-weight:600;}
 button.primary:hover{background:var(--teal-deep);}
-button.small{padding:5px 10px;font-size:12px;border-radius:5px;}
-table{width:100%;border-collapse:collapse;font-size:13px;}
-th{text-align:left;color:var(--ink-soft);font-weight:600;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--line);}
-td{padding:9px 10px;border-bottom:1px solid var(--line-soft);}
-.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;}
-.badge.pass{background:#E3F2E9;color:var(--ok);}
-.empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:13px;}
+button.small{padding:3px 8px;font-size:14px;border-radius:5px;}
+button.danger{background:var(--danger);color:#fff;border-color:var(--danger);}
+table{width:100%;border-collapse:collapse;font-size:15px;}
+th{text-align:center;color:var(--ink-soft);font-weight:700;font-size:14px;padding:6px 4px;border-bottom:1px solid var(--line);background:var(--line-soft);}
+td{padding:5px 4px;border-bottom:1px solid var(--line-soft);text-align:center;}
+td input, td select{font-family:inherit;font-size:14px;padding:4px 5px;border-radius:4px;border:1px solid var(--line);background:var(--paper);color:var(--ink);width:100%;box-sizing:border-box;text-align:center;}
+.summary-bar{background:var(--line-soft);padding:8px 14px;border-radius:8px;font-size:15px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:8px;}
+.empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:15px;}
+
+/* รูปแบบเอกสารสั่งพิมพ์ฟอนต์ Angsana New */
 #printArea{display:none;}
+.print-container{
+  font-family:'Angsana New', 'Sarabun', 'TH Sarabun New', sans-serif !important;
+  max-width:760px;
+  margin:0 auto;
+  padding:20px;
+  color:#000;
+  line-height:1.2;
+}
 @media print{
   body *{visibility:hidden;}
   #printArea, #printArea *{visibility:visible;}
@@ -75,9 +94,15 @@ td{padding:9px 10px;border-bottom:1px solid var(--line-soft);}
 <script>
 let activeTab = 'dash';
 
+let currentBatches = [
+  { batchNo: '1', amount: 40, time: '09:00', moisture: 0.04, partThrough: 98.5, partRet: 1.5, sieveCheck: 'ผ่าน', w1: 25.08, w2: 25.08, w3: 25.06, w4: 25.08, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' },
+  { batchNo: '2', amount: 40, time: '10:30', moisture: 0.03, partThrough: 98.8, partRet: 1.2, sieveCheck: 'ผ่าน', w1: 25.06, w2: 25.08, w3: 25.08, w4: 25.06, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' },
+  { batchNo: '3', amount: 40, time: '12:00', moisture: 0.04, partThrough: 98.4, partRet: 1.6, sieveCheck: 'ผ่าน', w1: 25.08, w2: 25.06, w3: 25.08, w4: 25.08, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' }
+];
+
 function getQCData(){
   try{
-    const r = localStorage.getItem('pgi_qc_data_v1');
+    const r = localStorage.getItem('pgi_qc_data_v5');
     if(r) return JSON.parse(r);
   }catch(e){}
   return [];
@@ -85,7 +110,7 @@ function getQCData(){
 
 function saveQCData(data){
   try{
-    localStorage.setItem('pgi_qc_data_v1', JSON.stringify(data));
+    localStorage.setItem('pgi_qc_data_v5', JSON.stringify(data));
   }catch(e){}
 }
 
@@ -121,25 +146,26 @@ function render(){
 function renderDash(){
   const list = getQCData();
   document.getElementById('tab-dash').innerHTML = `
-    <h1 class="page">📊 ภาพรวมระบบจัดการ COA</h1>
-    <p class="sub">สรุปสถานะการตรวจวิเคราะห์คุณภาพผลิตภัณฑ์และการออกใบรับรอง (COA)</p>
+    <h1 class="page">📊 ภาพรวมระบบจัดการ COA &amp; คุณภาพ</h1>
+    <p class="sub">สรุปสถานะการตรวจวิเคราะห์คุณภาพผลิตภัณฑ์และการออกเอกสาร COA</p>
     <div class="grid-stats">
-      <div class="stat"><div class="n">${list.length}</div><div class="l">รายการวิเคราะห์ทั้งหมด</div></div>
-      <div class="stat"><div class="n">${list.length}</div><div class="l">ออก COA สำเร็จ</div></div>
+      <div class="stat"><div class="n">${list.length}</div><div class="l">รายการ Lot ที่วิเคราะห์</div></div>
+      <div class="stat"><div class="n">${list.length}</div><div class="l">COA สำเร็จรูป (FM-QA-25)</div></div>
     </div>
     <div class="card">
-      <h3>เข้าสู่ระบบบันทึกคุณภาพ</h3>
-      <p style="font-size:13px;color:var(--ink-soft)">บันทึกผลวิเคราะห์คุณภาพแล็บ FM-QA-24 และตรวจสอบการบรรจุ FM-QA-19 เพื่อนำไปออกใบ COA</p>
-      <button type="button" class="btn primary" onclick="switchTab('qc-analysis')">🔬 ไปที่การวิเคราะห์คุณภาพ →</button>
+      <h3>การบันทึกผลวิเคราะห์คุณภาพและการตรวจสอบบรรจุภัณฑ์</h3>
+      <p style="font-size:15px;color:var(--ink-soft)">บันทึกข้อมูลผลแล็บตาม FM-QA-24 และตรวจสอบบรรจุภัณฑ์ตาม FM-QA-19 พร้อมสั่งพิมพ์ COA</p>
+      <button type="button" class="btn primary" onclick="switchTab('qc-analysis')">🔬 บันทึกการวิเคราะห์คุณภาพ →</button>
     </div>
   `;
 }
 
 function renderQCAnalysis(){
   document.getElementById('tab-qc-analysis').innerHTML = `
-    <h1 class="page">🔬 บันทึกการวิเคราะห์คุณภาพ (FM-QA-24 & FM-QA-19)</h1>
-    <p class="sub">บันทึกผลวิเคราะห์ทางห้องแล็บและผลการตรวจบรรจุภัณฑ์ เพื่อออกใบ COA สำเร็จรูป</p>
+    <h1 class="page">🔬 บันทึกการวิเคราะห์คุณภาพ &amp; ตรวจการบรรจุ (FM-QA-24 / FM-QA-19)</h1>
+    <p class="sub">บันทึกผลวิเคราะห์ Particle size, ความชื้น, คุณภาพแล็บ และการตรวจสอบบรรจุภัณฑ์ทุก Batch เพื่อออก COA (FM-QA-25)</p>
 
+    <!-- 1. ข้อมูลการสั่งผลิตและวัตถุดิบ -->
     <div class="card">
       <h3 style="color:var(--teal)">1. ข้อมูลทั่วไปและการสั่งผลิต</h3>
       <div class="form-grid">
@@ -157,17 +183,71 @@ function renderQCAnalysis(){
         <div><label>วันที่หมดอายุ (EXP Date)</label><input id="qc-exp" type="date"></div>
         <div><label>กำหนดส่งมอบ (Delivery Date)</label><input id="qc-deliv" type="date"></div>
       </div>
+      <div class="form-grid">
+        <div><label>Polarization วัตถุดิบ (°Z)</label><input id="qc-raw-polar" type="number" step="0.01" value="99.80"></div>
+        <div><label>Color วัตถุดิบ (ICUMSA)</label><input id="qc-raw-color" type="number" value="45"></div>
+        <div><label>Invert Sugar วัตถุดิบ (% w/w)</label><input id="qc-raw-invert" type="number" step="0.001" value="0.020"></div>
+      </div>
     </div>
 
+    <!-- 2. ข้อมูลบรรจุภัณฑ์ (FM-QA-19) -->
     <div class="card">
-      <h3 style="color:var(--teal)">2. ผลการวิเคราะห์คุณภาพผลิตภัณฑ์สำเร็จรูป (FM-QA-24 Rev.01)</h3>
+      <h3 style="color:var(--teal)">2. ข้อมูลบรรจุภัณฑ์และเกณฑ์น้ำหนัก (FM-QA-19 Rev.02)</h3>
       <div class="form-grid">
-        <div><label>Moisture Content (%)</label><input id="qa-moisture" type="number" step="0.01" value="0.04"></div>
-        <div><label>Polarization (Degree °Z)</label><input id="qa-polar" type="number" step="0.01" value="99.80"></div>
-        <div><label>Color (ICUMSA)</label><input id="qa-color" type="number" value="45"></div>
-        <div><label>Invert Sugar (% w/w)</label><input id="qa-invert" type="number" step="0.001" value="0.02"></div>
-        <div><label>Particle Size (% ผ่านตะแกรง 180µ)</label><input id="qa-part-pass" type="number" step="0.1" value="98.5"></div>
-        <div><label>Particle Size (% ค้างบนตะแกรง 180µ)</label><input id="qa-part-ret" type="number" step="0.1" value="1.5"></div>
+        <div><label>ชนิดบรรจุภัณฑ์ชั้นใน</label><input id="pkg-inner" value="HDPE Bag / LDPE liner"></div>
+        <div><label>ชนิดบรรจุภัณฑ์ชั้นนอก</label><input id="pkg-outer" value="PP Woven bag (ถุงกระสอบเย็บด้าย)"></div>
+        <div><label>สีด้ายเย็บ (Thread Color)</label><input id="pkg-thread-color" value="สีขาว / สีชมพู"></div>
+        <div><label>ขนาดบรรจุสุทธิต่อถุง (Net Wt. Kg)</label><input id="pkg-net-spec" type="number" step="0.01" value="25.00"></div>
+        <div><label>เกณฑ์น้ำหนักรวมถุงชั้นใน (Gross Wt. Spec)</label><input id="pkg-gross-spec" value="25.08 Kg (25.00 - 25.15 Kg)"></div>
+        <div><label>หมายเลขเครื่องชั่ง</label><input id="pkg-scale-id" value="SCL-QA-01"></div>
+      </div>
+    </div>
+
+    <!-- 3. ตาราง Batch บันทึกผลแล็บ FM-QA-24 และการตรวจบรรจุภัณฑ์ FM-QA-19 -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+        <h3 style="color:var(--teal);margin:0">3. รายการวิเคราะห์คุณภาพ &amp; การบรรจุทุก Batch (FM-QA-24 &amp; FM-QA-19)</h3>
+        <button type="button" class="btn small primary" id="btn-add-batch">+ เพิ่ม Batch</button>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th rowspan="2" style="width:60px">Batch</th>
+              <th rowspan="2" style="width:70px">จำนวน<br>(ถุง)</th>
+              <th rowspan="2" style="width:65px">เวลา</th>
+              <th colspan="3">FM-QA-24: คุณภาพ &amp; Particle Size</th>
+              <th colspan="4">FM-QA-19: การสุ่มชั่งน้ำหนักรวมถุงชั้นใน &amp; สภาพบรรจุภัณฑ์</th>
+              <th rowspan="2" style="width:50px">จัดการ</th>
+            </tr>
+            <tr>
+              <th style="width:75px">Moisture<br>(%)</th>
+              <th style="width:85px">ผ่าน 180µ<br>(%)</th>
+              <th style="width:85px">ค้าง 180µ<br>(%)</th>
+              <th style="width:140px">สุ่มชั่ง #1-#3 (Kg)</th>
+              <th style="width:100px">สุ่มชั่ง #4-#5 (Kg)</th>
+              <th style="width:75px">สภาพถุง</th>
+              <th style="width:75px">ฉลาก/ด้าย</th>
+            </tr>
+          </thead>
+          <tbody id="batch-rows"></tbody>
+        </table>
+      </div>
+
+      <div class="summary-bar" id="batch-summary">
+        <div><b>รวมผลิตได้:</b> <span id="sum-bags">0</span> ถุง (<span id="sum-mt">0.000</span> MT)</div>
+        <div><b>Moisture เฉลี่ย:</b> <span id="avg-moisture">0.00</span> %</div>
+        <div><b>ผ่าน 180µ เฉลี่ย:</b> <span id="avg-through">0.00</span> %</div>
+        <div><b>ค้าง 180µ เฉลี่ย:</b> <span id="avg-ret">0.00</span> %</div>
+        <div><b>นน. รวมถุงชั้นในเฉลี่ย:</b> <span id="avg-gross">0.00</span> Kg</div>
+      </div>
+    </div>
+
+    <!-- 4. ผลการตรวจทางกายภาพและผู้ลงนาม -->
+    <div class="card">
+      <h3 style="color:var(--teal)">4. ผลตรวจทางกายภาพ (Physical) และผู้ลงนาม</h3>
+      <div class="form-grid">
         <div><label>ลักษณะปรากฏ (Appearance)</label><input id="qa-app" value="White Powder"></div>
         <div><label>กลิ่น (Odor)</label><input id="qa-odor" value="No off odor"></div>
         <div><label>รสชาติ (Taste)</label><input id="qa-taste" value="Sweet"></div>
@@ -176,40 +256,149 @@ function renderQCAnalysis(){
         <div><label>ผู้วิเคราะห์ (Report By)</label><input id="qa-rep" placeholder="เจ้าหน้าที่ QA"></div>
         <div><label>ผู้ทวนสอบ (Approved By)</label><input id="qa-appr" placeholder="หัวหน้าฝ่าย QA"></div>
       </div>
-    </div>
-
-    <div class="card">
-      <h3 style="color:var(--teal)">3. รายงานการตรวจสอบการบรรจุผลิตภัณฑ์ (FM-QA-19 Rev.02)</h3>
-      <div class="form-grid">
-        <div><label>น้ำหนักสุทธิต่อถุง (Net Wt. Kg)</label><input id="qa-net" type="number" step="0.01" value="25.00"></div>
-        <div><label>จำนวนที่ผลิตได้ (Bags)</label><input id="qa-bags" type="number" value="200"></div>
-        <div><label>ปริมาณรวมสุทธิ (MT)</label><input id="qa-mt" type="number" step="0.001" value="5.000" readonly style="background:var(--line-soft)"></div>
-      </div>
       <div style="text-align:right;margin-top:14px;">
-        <button type="button" class="btn primary" id="btn-save-qc">💾 บันทึกผลวิเคราะห์ & ออกใบ COA →</button>
+        <button type="button" class="btn primary" id="btn-save-qc">💾 บันทึกทุกล็อต &amp; ออกใบ COA (FM-QA-25) →</button>
       </div>
     </div>
 
     <div class="card" style="padding:0;overflow:auto">
       <table>
         <thead>
-          <tr><th>Lot No.</th><th>สินค้า</th><th>ลูกค้า</th><th>วันที่ผลิต</th><th>Moisture</th><th>จำนวนบรรจุ</th><th>การจัดการ</th></tr>
+          <tr>
+            <th>Lot No.</th><th>สินค้า</th><th>ลูกค้า</th><th>วันที่ผลิต</th><th>จำนวน Batch</th><th>ยอดรวมผลิต</th><th>การจัดการ</th>
+          </tr>
         </thead>
         <tbody id="qc-table-body"></tbody>
       </table>
     </div>
   `;
 
-  const calcMT = function(){
-    const net = parseFloat(document.getElementById('qa-net').value) || 0;
-    const bags = parseFloat(document.getElementById('qa-bags').value) || 0;
-    document.getElementById('qa-mt').value = ((net * bags)/1000).toFixed(3);
-  };
-  document.getElementById('qa-net').addEventListener('input', calcMT);
-  document.getElementById('qa-bags').addEventListener('input', calcMT);
+  renderBatchTable();
+
+  document.getElementById('btn-add-batch').addEventListener('click', function(){
+    const nextNo = String(currentBatches.length + 1);
+    currentBatches.push({
+      batchNo: nextNo,
+      amount: 40,
+      time: '13:30',
+      moisture: 0.04,
+      partThrough: 98.5,
+      partRet: 1.5,
+      sieveCheck: 'ผ่าน',
+      w1: 25.08, w2: 25.08, w3: 25.06, w4: 25.08, w5: 25.08,
+      packCheck: 'ผ่าน',
+      labelCheck: 'ผ่าน',
+      threadCheck: 'ผ่าน'
+    });
+    renderBatchTable();
+  });
 
   document.getElementById('btn-save-qc').addEventListener('click', saveRecord);
   renderQCTable();
+}
+
+function renderBatchTable(){
+  const tbody = document.getElementById('batch-rows');
+  if(!tbody) return;
+
+  tbody.innerHTML = currentBatches.map(function(b, idx){
+    return `
+      <tr>
+        <td><input type="text" value="${b.batchNo}" onchange="updateBatchField(${idx}, 'batchNo', this.value)"></td>
+        <td><input type="number" value="${b.amount}" onchange="updateBatchField(${idx}, 'amount', parseFloat(this.value)||0)"></td>
+        <td><input type="text" value="${b.time}" onchange="updateBatchField(${idx}, 'time', this.value)"></td>
+        <td><input type="number" step="0.01" value="${b.moisture}" onchange="updateBatchField(${idx}, 'moisture', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.1" value="${b.partThrough}" onchange="updateBatchField(${idx}, 'partThrough', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.1" value="${b.partRet}" onchange="updateBatchField(${idx}, 'partRet', parseFloat(this.value)||0)"></td>
+        <td>
+          <div style="display:flex;gap:2px;">
+            <input type="number" step="0.01" value="${b.w1}" placeholder="#1" onchange="updateBatchField(${idx}, 'w1', parseFloat(this.value)||0)">
+            <input type="number" step="0.01" value="${b.w2}" placeholder="#2" onchange="updateBatchField(${idx}, 'w2', parseFloat(this.value)||0)">
+            <input type="number" step="0.01" value="${b.w3}" placeholder="#3" onchange="updateBatchField(${idx}, 'w3', parseFloat(this.value)||0)">
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;gap:2px;">
+            <input type="number" step="0.01" value="${b.w4}" placeholder="#4" onchange="updateBatchField(${idx}, 'w4', parseFloat(this.value)||0)">
+            <input type="number" step="0.01" value="${b.w5}" placeholder="#5" onchange="updateBatchField(${idx}, 'w5', parseFloat(this.value)||0)">
+          </div>
+        </td>
+        <td>
+          <select onchange="updateBatchField(${idx}, 'packCheck', this.value)">
+            <option value="ผ่าน" ${b.packCheck==='ผ่าน'?'selected':''}>ผ่าน</option>
+            <option value="ไม่ผ่าน" ${b.packCheck==='ไม่ผ่าน'?'selected':''}>ไม่ผ่าน</option>
+          </select>
+        </td>
+        <td>
+          <select onchange="updateBatchField(${idx}, 'labelCheck', this.value)">
+            <option value="ผ่าน" ${b.labelCheck==='ผ่าน'?'selected':''}>ผ่าน</option>
+            <option value="ไม่ผ่าน" ${b.labelCheck==='ไม่ผ่าน'?'selected':''}>ไม่ผ่าน</option>
+          </select>
+        </td>
+        <td>
+          <button type="button" class="btn small danger" onclick="removeBatch(${idx})">ลบ</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  calcBatchSummary();
+}
+
+function updateBatchField(idx, field, val){
+  if(currentBatches[idx]){
+    currentBatches[idx][field] = val;
+    calcBatchSummary();
+  }
+}
+
+function removeBatch(idx){
+  if(currentBatches.length <= 1){
+    alert('ต้องมีอย่างน้อย 1 Batch สำหรับการวิเคราะห์');
+    return;
+  }
+  currentBatches.splice(idx, 1);
+  renderBatchTable();
+}
+
+function calcBatchSummary(){
+  let totalBags = 0;
+  let sumMoisture = 0;
+  let sumThrough = 0;
+  let sumRet = 0;
+  let sumWeights = 0;
+  let totalWeightsCount = 0;
+  const count = currentBatches.length;
+
+  currentBatches.forEach(function(b){
+    totalBags += parseFloat(b.amount) || 0;
+    sumMoisture += parseFloat(b.moisture) || 0;
+    sumThrough += parseFloat(b.partThrough) || 0;
+    sumRet += parseFloat(b.partRet) || 0;
+
+    [b.w1, b.w2, b.w3, b.w4, b.w5].forEach(function(w){
+      if(w){
+        sumWeights += parseFloat(w);
+        totalWeightsCount++;
+      }
+    });
+  });
+
+  const netSpec = parseFloat(document.getElementById('pkg-net-spec')?.value) || 25.00;
+  const totalMT = ((totalBags * netSpec) / 1000).toFixed(3);
+  const avgMoisture = count ? (sumMoisture / count).toFixed(2) : '0.00';
+  const avgThrough = count ? (sumThrough / count).toFixed(2) : '0.00';
+  const avgRet = count ? (sumRet / count).toFixed(2) : '0.00';
+  const avgGross = totalWeightsCount ? (sumWeights / totalWeightsCount).toFixed(2) : '25.08';
+
+  if(document.getElementById('sum-bags')) document.getElementById('sum-bags').textContent = totalBags;
+  if(document.getElementById('sum-mt')) document.getElementById('sum-mt').textContent = totalMT;
+  if(document.getElementById('avg-moisture')) document.getElementById('avg-moisture').textContent = avgMoisture;
+  if(document.getElementById('avg-through')) document.getElementById('avg-through').textContent = avgThrough;
+  if(document.getElementById('avg-ret')) document.getElementById('avg-ret').textContent = avgRet;
+  if(document.getElementById('avg-gross')) document.getElementById('avg-gross').textContent = avgGross;
+
+  return { totalBags, totalMT, avgMoisture, avgThrough, avgRet, avgGross, netSpec };
 }
 
 function saveRecord(){
@@ -219,34 +408,40 @@ function saveRecord(){
     return;
   }
 
-  const item = {
+  const summary = calcBatchSummary();
+
+  const record = {
     lot: lot,
     prod: document.getElementById('qc-prod').value,
     cust: document.getElementById('qc-cust').value,
     mfg: document.getElementById('qc-mfg').value,
     exp: document.getElementById('qc-exp').value,
     deliv: document.getElementById('qc-deliv').value,
-    moisture: document.getElementById('qa-moisture').value,
-    polar: document.getElementById('qa-polar').value,
-    color: document.getElementById('qa-color').value,
-    invert: document.getElementById('qa-invert').value,
-    partPass: document.getElementById('qa-part-pass').value,
-    partRet: document.getElementById('qa-part-ret').value,
+    rawPolar: document.getElementById('qc-raw-polar').value,
+    rawColor: document.getElementById('qc-raw-color').value,
+    rawInvert: document.getElementById('qc-raw-invert').value,
+    pkg: {
+      inner: document.getElementById('pkg-inner').value,
+      outer: document.getElementById('pkg-outer').value,
+      thread: document.getElementById('pkg-thread-color').value,
+      netSpec: document.getElementById('pkg-net-spec').value,
+      grossSpec: document.getElementById('pkg-gross-spec').value,
+      scale: document.getElementById('pkg-scale-id').value
+    },
     app: document.getElementById('qa-app').value,
     odor: document.getElementById('qa-odor').value,
     taste: document.getElementById('qa-taste').value,
     rep: document.getElementById('qa-rep').value,
     appr: document.getElementById('qa-appr').value,
-    net: document.getElementById('qa-net').value,
-    bags: document.getElementById('qa-bags').value,
-    mt: document.getElementById('qa-mt').value,
+    batches: JSON.parse(JSON.stringify(currentBatches)),
+    summary: summary,
     date: new Date().toISOString().slice(0,10)
   };
 
   const list = getQCData();
-  list.unshift(item);
+  list.unshift(record);
   saveQCData(list);
-  alert('บันทึกข้อมูลและออกใบ COA เรียบร้อยแล้ว!');
+  alert('บันทึกผลวิเคราะห์ทุก Batch สำเร็จ พร้อมพิมพ์ COA และรายงานการบรรจุ');
   renderQCTable();
 }
 
@@ -265,9 +460,12 @@ function renderQCTable(){
         <td>${item.prod}</td>
         <td>${item.cust || '-'}</td>
         <td>${item.mfg}</td>
-        <td>${item.moisture}%</td>
-        <td>${item.bags} ถุง (${item.mt} MT)</td>
-        <td><button type="button" class="btn small primary" onclick="printCOA(${idx})">🖨️ พิมพ์ COA</button></td>
+        <td>${item.batches ? item.batches.length : 1} Batch</td>
+        <td>${item.summary.totalBags} ถุง (${item.summary.totalMT} MT)</td>
+        <td>
+          <button type="button" class="btn small primary" onclick="printCOA(${idx})">🖨️ พิมพ์ COA</button>
+          <button type="button" class="btn small ghost" onclick="printPackagingReport(${idx})">📦 พิมพ์ใบตรวจบรรจุ</button>
+        </td>
       </tr>
     `;
   }).join('');
@@ -276,11 +474,13 @@ function renderQCTable(){
 function renderList(){
   const list = getQCData();
   document.getElementById('tab-list').innerHTML = `
-    <h1 class="page">📋 รายการ COA ทั้งหมด</h1>
+    <h1 class="page">📋 รายการเอกสาร COA &amp; การตรวจสอบการบรรจุ</h1>
     <div class="card" style="padding:0;overflow:auto">
       <table>
         <thead>
-          <tr><th>Lot No.</th><th>สินค้า</th><th>ลูกค้า</th><th>วันที่ออกผล</th><th>ปริมาณ (MT)</th><th>พิมพ์ COA</th></tr>
+          <tr>
+            <th>Lot No.</th><th>สินค้า</th><th>ลูกค้า</th><th>วันที่ผลิต</th><th>จำนวน Batch</th><th>ปริมาณ (MT)</th><th>พิมพ์เอกสาร</th>
+          </tr>
         </thead>
         <tbody>
           ${list.map(function(item, idx){
@@ -289,86 +489,276 @@ function renderList(){
                 <td class="mono"><b>${item.lot}</b></td>
                 <td>${item.prod}</td>
                 <td>${item.cust || '-'}</td>
-                <td>${item.date}</td>
-                <td>${item.mt} MT</td>
-                <td><button type="button" class="btn small primary" onclick="printCOA(${idx})">🖨️ พิมพ์ COA</button></td>
+                <td>${item.mfg}</td>
+                <td>${item.batches ? item.batches.length : 1} Batch</td>
+                <td>${item.summary.totalMT} MT</td>
+                <td>
+                  <button type="button" class="btn small primary" onclick="printCOA(${idx})">🖨️ พิมพ์ COA</button>
+                  <button type="button" class="btn small ghost" onclick="printPackagingReport(${idx})">📦 พิมพ์ใบตรวจบรรจุ</button>
+                </td>
               </tr>
             `;
-          }).join('') || '<tr><td colspan="6"><div class="empty">ยังไม่มีรายการ COA</div></td></tr>'}
+          }).join('') || '<tr><td colspan="7"><div class="empty">ยังไม่มีรายการเอกสาร</div></td></tr>'}
         </tbody>
       </table>
     </div>
   `;
 }
 
+// 5. สั่งพิมพ์ Certificate Of Analysis (FM-QA-25 Rev.01) ฟอนต์ Angsana New
 function printCOA(index){
   const item = getQCData()[index];
   if(!item) return;
+  const s = item.summary;
+  const p = item.pkg || {};
+
   document.getElementById('printArea').innerHTML = `
-    <div style="font-family:'IBM Plex Sans Thai',sans-serif;max-width:760px;margin:0 auto;padding:20px;color:#111;">
-      <div style="text-align:center;">
-        <div style="font-weight:700;font-size:16px;">บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชั่นแนล จำกัด</div>
-        <div style="font-weight:600;font-size:14px;">PGI FOODS INTERNATIONAL COMPANY LIMITED</div>
-        <div style="font-size:11px;color:#556B6C;">16/1 ซอยบางกระดี่ 23 แขวงแสมดำ เขตบางขุนเทียน กรุงเทพ 10150</div>
-      </div>
-      <div style="text-align:right;font-size:11px;margin-top:6px;">FM-QA-25 Rev.01, 01/07/2025</div>
-      <div style="text-align:center;font-weight:700;font-size:18px;margin:14px 0 2px;">Certificate Of Analysis</div>
-      <div style="text-align:center;font-weight:600;font-size:15px;margin-bottom:12px;">${item.prod}</div>
+    <div class="print-container">
       
-      <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:12px;border:1px solid #333;">
+      <!-- HEADER แบบฟอร์มต้นฉบับ FM-QA-25 Rev.01 -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <!-- โลโก้ PGI International -->
+          <div style="border:2px solid #1F4B49;border-radius:4px;padding:2px 6px;text-align:center;line-height:1;color:#1F4B49;">
+            <div style="font-weight:900;font-size:18px;letter-spacing:1px;">PGI</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;">International</div>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:18px;color:#000;">บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชั่นแนล จำกัด</div>
+            <div style="font-weight:600;font-size:16px;color:#111;">PGI FOODS INTERNATIONAL COMPANY LIMITED</div>
+            <div style="font-size:14px;color:#333;">16/1 Soi Bangkradee 23 Samaedam Bangkhunthian Bangkok 10150 Tel 0-2452-2934 Fax 0-2452-2935</div>
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:600;white-space:nowrap;padding-top:2px;">FM-QA-25 Rev.01, 01/07/2025</div>
+      </div>
+
+      <div style="text-align:center;font-weight:700;font-style:italic;font-size:22px;margin:10px 0 2px;">Certificate Of Analysis</div>
+      <div style="text-align:center;font-weight:700;font-style:italic;font-size:18px;margin-bottom:10px;">${item.prod}</div>
+      
+      <!-- ข้อมูลผู้ผลิตและลูกค้า -->
+      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:15px;border:1px solid #000;">
         <tr>
-          <td style="padding:5px;border:1px solid #333;width:50%;"><b>Producer Information</b></td>
-          <td style="padding:5px;border:1px solid #333;width:50%;"><b>Customer Information</b></td>
+          <td style="padding:4px 6px;border:1px solid #000;width:50%;background:#f9f9f9;"><b>Producer Information</b></td>
+          <td style="padding:4px 6px;border:1px solid #000;width:50%;background:#f9f9f9;"><b>Customer Information</b></td>
         </tr>
         <tr>
-          <td style="padding:4px;border:1px solid #333;">Quantity: ${item.mt} MT</td>
-          <td style="padding:4px;border:1px solid #333;">Customer: ${item.cust || '-'}</td>
+          <td style="padding:3px 6px;border:1px solid #000;">Quantity Received&nbsp;&nbsp;&nbsp;&nbsp;${s.totalMT} MT</td>
+          <td style="padding:3px 6px;border:1px solid #000;">Delivery Date&nbsp;&nbsp;&nbsp;&nbsp;${item.deliv || '-'}</td>
         </tr>
         <tr>
-          <td style="padding:4px;border:1px solid #333;">Production Date: ${item.mfg}</td>
-          <td style="padding:4px;border:1px solid #333;">Delivery Date: ${item.deliv || '-'}</td>
+          <td style="padding:3px 6px;border:1px solid #000;">Production Date&nbsp;&nbsp;&nbsp;&nbsp;${item.mfg}</td>
+          <td style="padding:3px 6px;border:1px solid #000;">Customer&nbsp;&nbsp;&nbsp;&nbsp;${item.cust || '-'}</td>
         </tr>
         <tr>
-          <td style="padding:4px;border:1px solid #333;">Expire Date: ${item.exp || '-'}</td>
-          <td style="padding:4px;border:1px solid #333;">Net Weight: ${item.net} Kg/bag</td>
+          <td style="padding:3px 6px;border:1px solid #000;">Expire Date&nbsp;&nbsp;&nbsp;&nbsp;${item.exp || '-'}</td>
+          <td style="padding:3px 6px;border:1px solid #000;">Quantity&nbsp;&nbsp;&nbsp;&nbsp;${(parseFloat(s.totalMT)*1000).toLocaleString()} Kg.</td>
         </tr>
         <tr>
-          <td style="padding:4px;border:1px solid #333;">Lot No.: ${item.lot}</td>
-          <td style="padding:4px;border:1px solid #333;">Amount: ${item.bags} Bags</td>
+          <td style="padding:3px 6px;border:1px solid #000;">Lot No.&nbsp;&nbsp;&nbsp;&nbsp;${item.lot}</td>
+          <td style="padding:3px 6px;border:1px solid #000;">Net Weight (per bag)&nbsp;&nbsp;&nbsp;&nbsp;${s.netSpec} Kg.</td>
+        </tr>
+        <tr>
+          <td style="padding:3px 6px;border:1px solid #000;">Date received to warehouse (Raw Material)&nbsp;&nbsp;&nbsp;&nbsp;${item.mfg}</td>
+          <td style="padding:3px 6px;border:1px solid #000;">Amount&nbsp;&nbsp;&nbsp;&nbsp;${s.totalBags} Bags</td>
         </tr>
       </table>
 
-      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;">
+      <!-- ตารางผลวิเคราะห์คุณภาพและ Particle size -->
+      <table style="width:100%;border-collapse:collapse;font-size:15px;margin-bottom:8px;border:1px solid #000;">
         <thead>
           <tr style="background:#f2f2f2;">
-            <th style="border:1px solid #333;padding:6px;">Item</th>
-            <th style="border:1px solid #333;padding:6px;">Analysis Result</th>
-            <th style="border:1px solid #333;padding:6px;">Unit</th>
+            <th style="border:1px solid #000;padding:4px;width:38%;text-align:left;">Item</th>
+            <th style="border:1px solid #000;padding:4px;width:28%;text-align:left;">Specification</th>
+            <th style="border:1px solid #000;padding:4px;width:20%;text-align:center;">Analysis Result</th>
+            <th style="border:1px solid #000;padding:4px;width:14%;text-align:center;">Unit</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td style="border:1px solid #333;padding:5px;">Appearance</td><td style="border:1px solid #333;padding:5px;">${item.app}</td><td style="border:1px solid #333;padding:5px;">-</td></tr>
-          <tr><td style="border:1px solid #333;padding:5px;">Odor</td><td style="border:1px solid #333;padding:5px;">${item.odor}</td><td style="border:1px solid #333;padding:5px;">-</td></tr>
-          <tr><td style="border:1px solid #333;padding:5px;">Taste</td><td style="border:1px solid #333;padding:5px;">${item.taste}</td><td style="border:1px solid #333;padding:5px;">-</td></tr>
-          <tr><td style="border:1px solid #333;padding:5px;">Moisture</td><td style="border:1px solid #333;padding:5px;">${item.moisture}</td><td style="border:1px solid #333;padding:5px;">%</td></tr>
-          <tr><td style="border:1px solid #333;padding:5px;">Polarization</td><td style="border:1px solid #333;padding:5px;">${item.polar}</td><td style="border:1px solid #333;padding:5px;">Degree °Z</td></tr>
-          <tr><td style="border:1px solid #333;padding:5px;">Color</td><td style="border:1px solid #333;padding:5px;">${item.color}</td><td style="border:1px solid #333;padding:5px;">Icumsa</td></tr>
-          <tr><td style="border:1px solid #333;padding:5px;">Invert Sugar</td><td style="border:1px solid #333;padding:5px;">${item.invert}</td><td style="border:1px solid #333;padding:5px;">% w/w</td></tr>
-          <tr><td style="border:1px solid #333;padding:5px;">Particle Size (Through 180µ)</td><td style="border:1px solid #333;padding:5px;">${item.partPass}</td><td style="border:1px solid #333;padding:5px;">%</td></tr>
-          <tr><td style="border:1px solid #333;padding:5px;">Particle Size (Retained 180µ)</td><td style="border:1px solid #333;padding:5px;">${item.partRet}</td><td style="border:1px solid #333;padding:5px;">%</td></tr>
+          <tr><td style="border:1px solid #000;padding:3px 6px;">Appearance</td><td style="border:1px solid #000;padding:3px 6px;">White Powder</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.app}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">-</td></tr>
+          <tr><td style="border:1px solid #000;padding:3px 6px;">Odor</td><td style="border:1px solid #000;padding:3px 6px;">No off odor</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.odor}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">-</td></tr>
+          <tr><td style="border:1px solid #000;padding:3px 6px;">Taste</td><td style="border:1px solid #000;padding:3px 6px;">Sweet</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.taste}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">-</td></tr>
+          <tr><td style="border:1px solid #000;padding:3px 6px;">Moisture</td><td style="border:1px solid #000;padding:3px 6px;">≤ 0.80 %</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${s.avgMoisture}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">%</td></tr>
+          <tr><td style="border:1px solid #000;padding:3px 6px;">Polarization</td><td style="border:1px solid #000;padding:3px 6px;">≥ 95 Degree °Z</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.rawPolar}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">Degree °Z</td></tr>
+          <tr><td style="border:1px solid #000;padding:3px 6px;">Color</td><td style="border:1px solid #000;padding:3px 6px;">≤ 60 Icumsa</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.rawColor}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">Icumsa</td></tr>
+          <tr><td style="border:1px solid #000;padding:3px 6px;">Invert Sugar</td><td style="border:1px solid #000;padding:3px 6px;">≤ 0.04 % w/w</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.rawInvert}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">% w/w</td></tr>
+          
+          <!-- Particle Size หัวข้อย่อยตรงตามแบบฟอร์ม -->
+          <tr>
+            <td rowspan="3" style="border:1px solid #000;padding:3px 6px;vertical-align:top;"><b>Particle Size</b></td>
+            <td colspan="3" style="border:1px solid #000;padding:3px 6px;background:#fafafa;"><i>Sieve Analysis Testing</i></td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #000;padding:3px 6px;padding-left:14px;">Through sieve 180 microns (≥ 95%)</td>
+            <td style="border:1px solid #000;padding:3px 6px;text-align:center;">${s.avgThrough}</td>
+            <td style="border:1px solid #000;padding:3px 6px;text-align:center;">%</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #000;padding:3px 6px;padding-left:14px;">Retained sieve 180 microns (≤ 5%)</td>
+            <td style="border:1px solid #000;padding:3px 6px;text-align:center;">${s.avgRet}</td>
+            <td style="border:1px solid #000;padding:3px 6px;text-align:center;">%</td>
+          </tr>
         </tbody>
       </table>
 
-      <div style="display:flex;justify-content:space-between;margin-top:35px;font-size:12px;text-align:center;">
+      <!-- หัวข้อการตรวจสอบบรรจุภัณฑ์ -->
+      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:14px;border:1px solid #000;">
+        <thead>
+          <tr style="background:#f2f2f2;">
+            <th colspan="2" style="border:1px solid #000;padding:3px 6px;text-align:left;"><b>Packaging &amp; Labeling Inspection (Ref. FM-QA-19)</b></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border:1px solid #000;padding:3px 6px;width:50%;">• Primary Packaging: ${p.inner || '-'}</td>
+            <td style="border:1px solid #000;padding:3px 6px;width:50%;">• Package Condition: Clean, Undamaged, Sealed completely (Passed)</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #000;padding:3px 6px;">• Secondary Packaging: ${p.outer || '-'}</td>
+            <td style="border:1px solid #000;padding:3px 6px;">• Label &amp; Thread: Correct details, Thread color (${p.thread || '-'})</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #000;padding:3px 6px;">• Average Gross Weight (รวมถุงใน): ${s.avgGross} Kg.</td>
+            <td style="border:1px solid #000;padding:3px 6px;">• Scale ID: ${p.scale || '-'}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ลายเซ็นต์คู่ Report By และ Approved By -->
+      <div style="display:flex;justify-content:space-between;margin-top:20px;font-size:15px;text-align:center;">
         <div style="width:45%;">
-          Report By........................................<br>
-          (${item.rep || '________________________'})
+          Report By............................................................<br>
+          ( ${item.rep || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )
         </div>
         <div style="width:45%;">
-          Approved By........................................<br>
-          (${item.appr || '________________________'})
+          Approved By............................................................<br>
+          ( ${item.appr || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )
         </div>
       </div>
+
+      <!-- FOOTER แบบฟอร์มต้นฉบับ FM-QA-25 Rev.01 -->
+      <div style="margin-top:20px;padding-top:6px;border-top:1px solid #777;text-align:center;font-size:13.5px;color:#222;line-height:1.35;">
+        <div style="font-weight:700;">บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชั่นแนล จำกัด</div>
+        <div>16/1 ซอยบางกระดี่ 23 แขวงแสมดำ เขตบางขุนเทียน กรุงเทพ 10150</div>
+        <div>โทรศัพท์ 0-2452-2934 แฟกซ์ 0-2452-2935</div>
+      </div>
+
+    </div>
+  `;
+  window.print();
+}
+
+// 6. สั่งพิมพ์รายงานการตรวจสอบการบรรจุผลิตภัณฑ์ (FM-QA-19 Rev.02) ฟอนต์ Angsana New
+function printPackagingReport(index){
+  const item = getQCData()[index];
+  if(!item) return;
+  const p = item.pkg || {};
+  const s = item.summary;
+
+  document.getElementById('printArea').innerHTML = `
+    <div class="print-container">
+      
+      <!-- HEADER แบบฟอร์มต้นฉบับ FM-QA-19 Rev.02 -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="border:2px solid #1F4B49;border-radius:4px;padding:2px 6px;text-align:center;line-height:1;color:#1F4B49;">
+            <div style="font-weight:900;font-size:18px;letter-spacing:1px;">PGI</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;">International</div>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:18px;color:#000;">บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชันแนล จำกัด</div>
+            <div style="font-weight:600;font-size:16px;color:#111;">PGI FOODS INTERNATIONAL COMPANY LIMITED</div>
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:600;white-space:nowrap;padding-top:2px;">FM-QA-19 Rev.02, 01/08/2025</div>
+      </div>
+
+      <div style="text-align:center;font-weight:700;font-size:20px;margin:8px 0 8px;">รายงานการตรวจสอบการบรรจุผลิตภัณฑ์</div>
+
+      <table style="width:100%;border-collapse:collapse;font-size:15px;margin-bottom:8px;">
+        <tr>
+          <td style="padding:2px 0;"><b>วันที่ผลิต:</b> ${item.mfg}</td>
+          <td style="padding:2px 0;"><b>ผลิตภัณฑ์:</b> [✓] ${item.prod}</td>
+          <td style="padding:2px 0;"><b>Customer:</b> ${item.cust || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding:2px 0;"><b>Lot No.:</b> ${item.lot}</td>
+          <td style="padding:2px 0;"><b>จำนวนที่ผลิต:</b> ${s.totalBags} ถุง (${s.totalMT} MT)</td>
+          <td style="padding:2px 0;"><b>วันที่จัดส่ง:</b> ${item.deliv || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding:2px 0;" colspan="3"><b>ชนิดบรรจุภัณฑ์ชั้นใน:</b> ${p.inner || '-'} &nbsp;&nbsp;&nbsp;&nbsp; <b>ชนิดบรรจุภัณฑ์ชั้นนอก:</b> ${p.outer || '-'}</td>
+        </tr>
+      </table>
+
+      <!-- ตารางสุ่มชั่งน้ำหนักตามฟอร์มจริง -->
+      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:8px;border:1px solid #000;">
+        <thead>
+          <tr style="background:#f2f2f2;">
+            <th rowspan="2" style="border:1px solid #000;padding:3px;width:55px;">Batch</th>
+            <th colspan="5" style="border:1px solid #000;padding:3px;">น้ำหนักผลิตภัณฑ์รวมบรรจุภัณฑ์ชั้นใน (Kg)</th>
+            <th rowspan="2" style="border:1px solid #000;padding:3px;width:65px;">จำนวนที่ได้<br>(ถุง)</th>
+            <th rowspan="2" style="border:1px solid #000;padding:3px;width:60px;">สภาพ<br>บรรจุภัณฑ์</th>
+            <th rowspan="2" style="border:1px solid #000;padding:3px;width:65px;">รายละเอียด<br>ฉลาก</th>
+            <th rowspan="2" style="border:1px solid #000;padding:3px;width:65px;">สีด้ายเย็บ</th>
+            <th colspan="2" style="border:1px solid #000;padding:3px;width:70px;">ผลการตรวจสอบ</th>
+            <th rowspan="2" style="border:1px solid #000;padding:3px;width:65px;">หมายเลข<br>เครื่องชั่ง</th>
+          </tr>
+          <tr style="background:#f2f2f2;">
+            <th style="border:1px solid #000;padding:2px;width:45px;">#1</th>
+            <th style="border:1px solid #000;padding:2px;width:45px;">#2</th>
+            <th style="border:1px solid #000;padding:2px;width:45px;">#3</th>
+            <th style="border:1px solid #000;padding:2px;width:45px;">#4</th>
+            <th style="border:1px solid #000;padding:2px;width:45px;">#5</th>
+            <th style="border:1px solid #000;padding:2px;width:35px;">ผ่าน</th>
+            <th style="border:1px solid #000;padding:2px;width:35px;">ไม่ผ่าน</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${item.batches.map(function(b){
+            return `
+              <tr>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">#${b.batchNo}</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.w1||'-'}</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.w2||'-'}</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.w3||'-'}</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.w4||'-'}</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.w5||'-'}</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.amount}</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.packCheck==='ผ่าน'?'✓':'X'}</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.labelCheck==='ผ่าน'?'✓':'X'}</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">${p.thread||'-'}</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">✓</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">-</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">${p.scale||'-'}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+
+      <!-- หมายเหตุตามฟอร์มจริง -->
+      <div style="font-size:13px;color:#222;line-height:1.25;margin-bottom:16px;">
+        <b>หมายเหตุ:</b><br>
+        1. น้ำหนักผลิตภัณฑ์รวมกับบรรจุภัณฑ์ชั้นใน, ขนาด 10 Kg (10.06 Kg), ขนาด 15 Kg (15.06 Kg), ขนาด 25 Kg (25.08 Kg), ขนาด 30 Kg (30.25Kg), ขนาด 40 Kg (40.18 Kg) และ Paper Bag Icing 25 Kg (25.30 Kg)<br>
+        2. การตรวจสอบสภาพบรรจุภัณฑ์ สะอาดปราศจากสิ่งปนเปื้อน ไม่ฉีกขาด รอยเย็บเรียบร้อย ไม่เปียกชื้น ไม่มีรอยเปื้อน ความถูกต้องของชนิดบรรจุภัณฑ์ และสีด้ายเย็บ กรณีที่เป็นกล่องต้องไม่บุบหรือยุบตัว<br>
+        3. การตรวจสอบรายละเอียดบนฉลาก ชื่อผลิตภัณฑ์ น้ำหนักสุทธิ วันเดือนปีที่ผลิตและหมดอายุของผลิตภัณฑ์<br>
+        4. ระบุเครื่องหมาย ✓ หมายถึง ถูกต้อง ยอมรับ หรือเครื่องหมาย X หมายถึง ไม่ถูกต้อง ไม่ยอมรับ
+      </div>
+
+      <!-- ส่วนลงนามตามฟอร์มจริง -->
+      <div style="display:flex;justify-content:space-between;font-size:15px;text-align:center;margin-top:16px;">
+        <div style="width:45%;">
+          ผู้ตรวจสอบ............................................................<br>
+          ( ${item.rep || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )<br>
+          <span style="font-size:13px;">เจ้าหน้าที่/ผช.หัวหน้าฝ่ายประกันคุณภาพ</span>
+        </div>
+        <div style="width:45%;">
+          ผู้ทวนสอบ............................................................<br>
+          ( ${item.appr || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )<br>
+          <span style="font-size:13px;">หัวหน้าฝ่ายประกันคุณภาพ</span>
+        </div>
+      </div>
+
     </div>
   `;
   window.print();
