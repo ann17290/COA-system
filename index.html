@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ระบบจัดการ COA อัจฉริยะ - PGI Foods</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F4EE; --paper:#FFFFFF; --ink:#1B2A2E; --ink-soft:#5B6B6C;
+  --teal:#2F6F6B; --teal-deep:#1F4B49; --amber:#C9862E; --danger:#B23A34; --ok:#3A7D5C;
+  --line:#DCD8CC; --line-soft:#EAE7DC;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14201F; --paper:#1B2827; --ink:#EDEAE0; --ink-soft:#9FADA9;
+    --line:#2C3B39; --line-soft:#233231;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14201F; --paper:#1B2827; --ink:#EDEAE0; --ink-soft:#9FADA9;
+  --line:#2C3B39; --line-soft:#233231;
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Thai',sans-serif;min-height:100%;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+.shell{display:flex;min-height:100vh;}
+nav.side{width:230px;flex:none;background:var(--teal-deep);color:#EAF3F1;padding:20px 14px;position:sticky;top:0;height:100vh;overflow:auto;}
+nav.side .brand{font-weight:700;font-size:15px;letter-spacing:.2px;margin-bottom:2px;}
+nav.side .brand small{display:block;font-weight:400;font-size:11.5px;color:#A9C7C3;margin-top:3px;}
+nav.side ul{list-style:none;padding:0;margin:22px 0 0;display:flex;flex-direction:column;gap:2px;}
+nav.side button{all:unset;cursor:pointer;display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font-size:13.5px;color:#CFE3E0;width:100%;}
+nav.side button:hover{background:rgba(255,255,255,.06);}
+nav.side button.active{background:#EAF3F1;color:var(--teal-deep);font-weight:600;}
+main{flex:1;padding:26px 30px 60px;max-width:1180px;}
+h1.page{font-size:20px;margin:0 0 4px;font-weight:700;}
+p.sub{margin:0 0 22px;color:var(--ink-soft);font-size:13.5px;}
+.grid-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px;}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
+.stat .n{font-size:26px;font-weight:700;line-height:1.1;}
+.stat .l{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+.stat.pending .n{color:var(--amber);} .stat.pass .n{color:var(--ok);}
+.stat.warn .n{color:var(--amber);} .stat.fail .n{color:var(--danger);}
+.panels{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;}
+.card h3{margin:0 0 12px;font-size:13.5px;font-weight:600;}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;font-size:12.5px;}
+.bar-row .lbl{width:78px;flex:none;color:var(--ink-soft);}
+.bar-track{flex:1;background:var(--line-soft);border-radius:5px;height:9px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:5px;background:var(--teal);}
+.bar-row .val{width:20px;text-align:right;flex:none;}
+.donut-wrap{display:flex;align-items:center;gap:16px;}
+.legend div{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:6px;color:var(--ink-soft);}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;}
+.insight{border-left:3px solid var(--amber);background:var(--line-soft);padding:8px 10px;border-radius:0 6px 6px 0;font-size:12.5px;margin-bottom:8px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;color:var(--ink-soft);font-weight:600;font-size:11.5px;padding:8px 10px;border-bottom:1px solid var(--line);}
+td{padding:9px 10px;border-bottom:1px solid var(--line-soft);}
+tr:last-child td{border-bottom:none;}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.badge.pass{background:#E3F2E9;color:var(--ok);} .badge.warn{background:#FBEDDC;color:var(--amber);}
+.badge.fail{background:#F8E2E0;color:var(--danger);} .badge.pending{background:#EDE9DE;color:#8A7B4E;}
+.badge.sup{background:#EAEEE3;color:#556B4E;} .badge.int{background:#E1EBF2;color:#2C5F7C;}
+.modal.wide{max-width:750px;}
+.readonly-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;font-size:12.5px;color:var(--ink-soft);margin-bottom:14px;background:var(--line-soft);padding:10px 14px;border-radius:8px;}
+.readonly-grid b{color:var(--ink);font-weight:600;}
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+select,input,button.btn{font-family:inherit;font-size:13px;padding:8px 11px;border-radius:7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);}
+button.btn{cursor:pointer;}
+button.primary{background:var(--teal);color:#fff;border-color:var(--teal);font-weight:600;}
+button.primary:hover{background:var(--teal-deep);}
+button.ghost{background:transparent;}
+button.danger{background:var(--danger);color:#fff;border-color:var(--danger);}
+button.small{padding:5px 10px;font-size:12px;border-radius:6px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+.form-grid label{font-size:12px;color:var(--ink-soft);display:block;margin-bottom:5px;}
+.form-grid input,.form-grid select{width:100%;}
+.param-table th,.param-table td{font-size:13px;}
+.param-table input{width:100%;padding:6px 8px;font-size:13px;}
+.rowline{display:flex;justify-content:space-between;align-items:center;margin:18px 0 8px;flex-wrap:wrap;gap:8px;}
+.status-line{margin-top:16px;padding:12px;border-radius:8px;font-size:13px;}
+.status-line.ok{background:#E3F2E9;color:var(--ok);}
+.status-line.warn{background:#FBEDDC;color:#8A5A18;}
+.status-line.fail{background:#F8E2E0;color:var(--danger);}
+.status-line.info{background:var(--line-soft);color:var(--ink-soft);}
+.chain{display:flex;align-items:center;gap:0;overflow-x:auto;padding:6px 0;}
+.chain .node{background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:12px 16px;min-width:96px;text-align:center;font-size:12px;flex:none;}
+.chain .node b{display:block;font-size:13px;margin-bottom:2px;}
+.chain .arrow{color:var(--ink-soft);padding:0 8px;flex:none;}
+.modal-bg{position:fixed;inset:0;background:rgba(15,25,24,.45);display:none;align-items:center;justify-content:center;z-index:20;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--paper);border-radius:12px;padding:22px;max-width:560px;width:100%;max-height:86vh;overflow:auto;}
+.modal h3{margin-top:0;}
+.empty{text-align:center;color:var(--ink-soft);padding:40px 10px;font-size:13.5px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.chip{padding:6px 13px;border-radius:20px;border:1px solid var(--line);font-size:12.5px;cursor:pointer;background:var(--paper);}
+.chip.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+.spec-table th,.spec-table td{font-size:13px;vertical-align:middle;}
+.spec-table input[type=number]{width:80px;}
+.checkbox-cell{text-align:center;}
+::-webkit-scrollbar{height:8px;width:8px;} ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+#printArea{display:none;}
+.print-doc{font-family:'IBM Plex Sans Thai',sans-serif;color:#111;max-width:760px;margin:0 auto;padding:20px;}
+.print-doc .pheadrow{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;}
+.print-doc .phead{text-align:center;flex:1;}
+.print-doc .phead .th-name{font-weight:700;font-size:14.5px;}
+.print-doc .phead .en-name{font-weight:600;font-size:13px;}
+.print-doc .formcode{font-size:10.5px;color:#333;white-space:nowrap;}
+.print-doc .ptitle{text-align:center;font-weight:700;font-style:italic;font-size:16px;margin:12px 0 2px;}
+.print-doc .pproduct{text-align:center;font-weight:700;font-style:italic;font-size:13.5px;margin-bottom:10px;}
+.print-doc table{width:100%;border-collapse:collapse;margin-bottom:10px;}
+.print-doc th,.print-doc td{border:1px solid #333;padding:5px 8px;font-size:12px;text-align:left;}
+.print-doc .infogrid td{padding:4px 8px;font-size:12px;}
+.print-doc .sig{display:flex;justify-content:space-between;margin-top:34px;font-size:12px;text-align:center;}
+.print-doc .sig div{width:45%;}
+.print-doc .pfoot{margin-top:26px;padding-top:6px;border-top:1px solid #999;text-align:center;font-size:10px;color:#444;line-height:1.5;}
+.rmspec-doc{font-family:'IBM Plex Sans Thai',sans-serif;color:#000;max-width:210mm;margin:0 auto;padding:10mm;font-size:11px;line-height:1.35;}
+.rmspec-doc .rms-header{width:100%;border-collapse:collapse;margin-bottom:8px;}
+.rmspec-doc .rms-header td{border:1px solid #000;padding:4px 8px;}
+.rmspec-doc .rms-title{text-align:center;font-weight:bold;font-size:14px;}
+.rmspec-doc .rms-doccode{text-align:right;font-weight:bold;font-size:10px;}
+.rmspec-doc .rms-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;border:1px solid #000;padding:6px 8px;font-size:11px;}
+.rmspec-doc table.rms-spec{width:100%;border-collapse:collapse;margin-bottom:8px;}
+.rmspec-doc table.rms-spec th,.rmspec-doc table.rms-spec td{border:1px solid #000;padding:3px 6px;font-size:10px;text-align:left;}
+.rmspec-doc table.rms-spec th{background:#f8fafc;font-weight:bold;}
+.rmspec-doc .section-head{background:#e2e8f0;font-weight:bold;text-transform:uppercase;font-size:10.5px;}
+.rmspec-doc .rms-section{margin-bottom:6px;}
+.rmspec-doc .rms-section-title{font-weight:bold;font-size:10.5px;border-bottom:1px solid #000;margin-bottom:2px;}
+.rmspec-doc .rms-section-body{font-size:10px;padding-left:4px;}
+.rmspec-doc .rms-sig{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:20px;text-align:center;font-size:9.5px;}
+.rmspec-doc .rms-sig-line{border-bottom:1px dotted #000;margin-top:25px;margin-bottom:4px;}
+@media print{
+  body *{visibility:hidden;}
+  #printArea, #printArea *{visibility:visible;}
+  #printArea{display:block !important;position:absolute;top:0;left:0;width:100%;}
+}
+@media(max-width:880px){
+  .shell{flex-direction:column;}
+  nav.side{width:100%;height:auto;position:relative;display:flex;align-items:center;justify-content:space-between;}
+  nav.side ul{flex-direction:row;overflow-x:auto;margin-top:0;}
+  .grid-stats{grid-template-columns:repeat(2,1fr);}
+  .panels{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr 1fr;}
+  main{padding:18px;}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="side">
+    <div class="brand">COA MANAGEMENT<small>AI Supplier & Production Quality</small></div>
+    <ul id="navlist">
+      <li><button data-tab="dash" class="active">📊 แดชบอร์ด</button></li>
+      <li><button data-tab="qc-analysis">🔬 การวิเคราะห์คุณภาพ (FM-QA-24/19)</button></li>
+      <li><button data-tab="upload">⬆️ อัปโหลด COA วัตถุดิบ</button></li>
+      <li><button data-tab="list">📋 รายการ COA</button></li>
+      <li><button data-tab="qa">✅ ตรวจสอบ QA</button></li>
+      <li><button data-tab="receive">📥 รับเข้าวัตถุดิบ</button></li>
+      <li><button data-tab="trace">🔗 Traceability</button></li>
+      <li><button data-tab="spec">⚙️ ตั้งค่า Spec</button></li>
+      <li><button data-tab="certtemplate">🖨️ แบบฟอร์ม COA</button></li>
+    </ul>
+  </nav>
+  <main>
+    <section id="tab-dash"></section>
+    <section id="tab-qc-analysis" style="display:none"></section>
+    <section id="tab-upload" style="display:none"></section>
+    <section id="tab-list" style="display:none"></section>
+    <section id="tab-qa" style="display:none"></section>
+    <section id="tab-receive" style="display:none"></section>
+    <section id="tab-trace" style="display:none"></section>
+    <section id="tab-spec" style="display:none"></section>
+    <section id="tab-certtemplate" style="display:none"></section>
+  </main>
+</div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalBody"></div></div>
+<div id="printArea"></div>
+
+<script>
+/* ---------- Editable Certificate Settings (FM-QA-25 Rev.01) ---------- */
+function loadCertTemplate(){
+  try{ const raw=localStorage.getItem('coa_certtemplate_v1'); if(raw) return JSON.parse(raw); }catch(e){}
+  return {
+    th: 'บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชั่นแนล จำกัด',
+    en: 'PGI FOODS INTERNATIONAL COMPANY LIMITED',
+    address: '16/1 Soi Bangkradee 23 Samaedam Bangkhunthian Bangkok 10150',
+    tel: 'Tel 0-2452-2934  Fax 0-2452-2935',
+    formCode: 'FM-QA-25 Rev.01, 01/07/2025',
+    title: 'Certificate Of Analysis',
+    specSheetCode: 'SP-QA-01',
+    specSheetRev: 'Rev.03, 19/03/2026'
+  };
+}
+function saveCertTemplate(){ try{ localStorage.setItem('coa_certtemplate_v1', JSON.stringify(CERT_TEMPLATE)); }catch(e){} }
+let CERT_TEMPLATE = loadCertTemplate();
+
+/* ---------- Specifications: per-product parameter limits ---------- */
+function defaultSpecs(){
+  return {
+    'Icing Sugar': [
+      {name:'Sugar Powder', unit:'%', min:96, required:true},
+      {name:'Tapioca Starch', unit:'%', max:4, required:true},
+      {name:'Appearance', unit:'-', type:'text', expected:'White Powder', required:true},
+      {name:'Taste', unit:'-', type:'text', expected:'Sweet', required:true},
+      {name:'Odor', unit:'-', type:'text', expected:'No off odor', required:true},
+      {name:'Invert Sugar', unit:'% w/w', max:0.04, required:true},
+      {name:'Polarization', unit:'Degree °Z', min:95, required:true},
+      {name:'Color', unit:'Icumsa', max:60, required:true},
+      {name:'Moisture', unit:'%', max:0.80, required:true},
+      {name:'Particle Size (Through 180µ)', unit:'%', min:95, required:false},
+      {name:'Particle Size (Retained 180µ)', unit:'%', max:5, required:false},
+    ],
+    'Sugar Milled 40s': [
+      {name:'Appearance', unit:'-', type:'text', expected:'White Powder', required:true},
+      {name:'Odor', unit:'-', type:'text', expected:'No off odor', required:true},
+      {name:'Taste', unit:'-', type:'text', expected:'Sweet', required:true},
+      {name:'Polarization', unit:'Degree °Z', min:99.8, required:true},
+      {name:'Moisture', unit:'%', max:0.04, required:true},
+      {name:'Color', unit:'Icumsa', max:60, required:true},
+      {name:'Invert Sugar', unit:'% w/w', max:0.04, required:true}
+    ],
+    'Caster Sugar 30s': [
+      {name:'Appearance', unit:'-', type:'text', expected:'White Crystal', required:true},
+      {name:'Odor', unit:'-', type:'text', expected:'No off odor', required:true},
+      {name:'Taste', unit:'-', type:'text', expected:'Sweet', required:true},
+      {name:'Polarization', unit:'Degree °Z', min:99.8, required:true},
+      {name:'Moisture', unit:'%', max:0.04, required:true},
+      {name:'Color', unit:'Icumsa', max:45, required:true}
+    ],
+    'Ground Sugar': [
+      {name:'Appearance', unit:'-', type:'text', expected:'White Powder', required:true},
+      {name:'Odor', unit:'-', type:'text', expected:'No off odor', required:true},
+      {name:'Taste', unit:'-', type:'text', expected:'Sweet', required:true},
+      {name:'Moisture', unit:'%', max:0.1, required:true}
+    ],
+    'Skipjack Tuna': [
+      {name:'Histamine', unit:'ppm', max:50, required:true},
+      {name:'Mercury', unit:'mg/kg', max:0.50, required:true},
+      {name:'Moisture', unit:'%', min:68, max:75, required:true},
+      {name:'TVB-N', unit:'mg/100g', max:20, required:true},
+      {name:'Heavy Metal', unit:'mg/kg', max:5, required:true},
+    ]
+  };
+}
+function defaultSpecMeta(){
+  return {
+    'Icing Sugar': {
+      supplier:'PGI FOODS INTERNATIONAL',
+      description:'Icing Sugar produced from pulverized refined sugar blended with tapioca starch.',
+      gmo:'Non GMOs', allergen:'No Allergens',
+      packing:'Packed in 25 kg bag with LDPE inner liner and woven outer bag.',
+      storage:'Room temperature in dry area, clean, protected from sunlight and humidity.',
+      shelfLife:'12-24 Months from manufacturing date.',
+      remarks:'FM-QA-24 Rev.01, FM-QA-19 Rev.02, FM-QA-25 Rev.01'
+    }
+  };
+}
+function loadSpecMeta(){
+  try{ const raw=localStorage.getItem('coa_specmeta_v1'); if(raw) return JSON.parse(raw); }catch(e){}
+  return defaultSpecMeta();
+}
+function saveSpecMeta(){ try{ localStorage.setItem('coa_specmeta_v1', JSON.stringify(SPEC_META)); }catch(e){} }
+let SPEC_META = loadSpecMeta();
+function getSpecMeta(product){
+  if(!SPEC_META[product]) SPEC_META[product]={supplier:'',description:'',gmo:'',allergen:'',packing:'',storage:'',shelfLife:'',transport:'',remarks:'',sigRoles:['QA Specialist','QA Supervisor','QA Manager','Director']};
+  return SPEC_META[product];
+}
+function loadSpecs(){
+  try{ const raw=localStorage.getItem('coa_specs_v1'); if(raw) return JSON.parse(raw); }catch(e){}
+  return defaultSpecs();
+}
+function saveSpecs(){ try{ localStorage.setItem('coa_specs_v1', JSON.stringify(SPECS)); }catch(e){} }
+let SPECS = loadSpecs();
+
+/* ---------- COA Data Storage ---------- */
+function loadData(){
+  try{ const raw=localStorage.getItem('coa_records_v2'); if(raw) return JSON.parse(raw); }catch(e){}
+  return seed();
+}
+function saveData(){ try{ localStorage.setItem('coa_records_v2', JSON.stringify(DATA)); }catch(e){} }
+
+function seed(){
+  const mk=(supplier,coaNo,lot,product,date,params,qa)=>({id:crypto.randomUUID(),supplier,coaNo,lot,product,date,params,qa,note:'',
+    type:'supplier',received:false,
+    log:[{t:date,e:'สร้างรายการ COA'}]});
+  return [
+    mk('ABC Foods, Ltd.','COA-2405-1234','SKJ240501','Skipjack Tuna','2024-05-15',
+      [{name:'Histamine',result:8.2,unit:'ppm'},{name:'Mercury',result:0.12,unit:'mg/kg'},{name:'Moisture',result:71.5,unit:'%'},{name:'TVB-N',result:12.4,unit:'mg/100g'}],'Pending Review')
+  ];
+}
+let DATA = loadData();
+let activeTab='dash';
+
+/* ---------- QC Data Storage (FM-QA-24 & FM-QA-19) ---------- */
+function loadQCAnalysisData() {
+  try {
+    const raw = localStorage.getItem('qc_analysis_records_v1');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return [];
+}
+function saveQCAnalysisData() {
+  try { localStorage.setItem('qc_analysis_records_v1', JSON.stringify(QC_DATA)); } catch(e) {}
+}
+let QC_DATA = loadQCAnalysisData();
+
+/* ---------- Evaluation ---------- */
+function evalParams(rawParams, specList){
+  specList = specList || [];
+  let hasFail=false, hasWarn=false;
+  const names = rawParams.map(p=>p.name);
+  const out = rawParams.map(p=>{
+    const spec = specList.find(s=>s.name===p.name);
+    let status='pass';
+    if(spec){
+      if(spec.type==='text'){
+        const val=(p.result??'').toString().trim().toLowerCase();
+        const exp=(spec.expected||'').toString().trim().toLowerCase();
+        if(exp && val!==exp){ status='fail'; hasFail=true; }
+      } else {
+        const num=parseFloat(p.result);
+        if(isNaN(num) || (spec.max!==undefined && num>spec.max) || (spec.min!==undefined && num<spec.min)){ status='fail'; hasFail=true; }
+      }
+    }
+    return {...p, spec, status};
+  });
+  specList.filter(s=>s.required && !names.includes(s.name)).forEach(s=>{
+    out.push({name:s.name, result:null, unit:s.unit, spec:s, status:'missing'});
+    hasWarn=true;
+  });
+  const overall = hasFail ? 'fail' : (hasWarn ? 'warn' : 'pass');
+  return {params:out, overall};
+}
+function computeEval(d){
+  return evalParams(d.params, SPECS[d.product]);
+}
+function fmtSpec(s){
+  if(!s) return '—';
+  if(s.type==='text') return `= "${s.expected||''}"`;
+  if(s.min!==undefined && s.max!==undefined) return `${s.min}–${s.max} ${s.unit}`;
+  if(s.min!==undefined) return `≥ ${s.min} ${s.unit}`;
+  if(s.max!==undefined) return `≤ ${s.max} ${s.unit}`;
+  return s.unit||'—';
+}
+function statusBadge(st){
+  const map={pass:['pass','ผ่าน'],warn:['warn','เฝ้าระวัง'],fail:['fail','ไม่ผ่าน'],missing:['warn','ขาดพารามิเตอร์'],
+    'Pending Review':['pending','รอตรวจสอบ'],'Approved':['pass','อนุมัติ'],'Rejected':['fail','ปฏิเสธ']};
+  const [cls,label]=map[st]||['pending',st];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+function typeBadge(d){
+  return d.type==='internal' ? `<span class="badge int">COA ของตนเอง</span>` : `<span class="badge sup">COA ผู้จำหน่าย</span>`;
+}
+
+/* ---------- Navigation ---------- */
+function switchTab(tab){
+  activeTab=tab;
+  document.querySelectorAll('nav.side button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('main > section').forEach(s=>s.style.display='none');
+  const target = document.getElementById('tab-'+tab);
+  if(target) target.style.display='block';
+  render();
+}
+document.getElementById('navlist').addEventListener('click', e=>{
+  const b=e.target.closest('button[data-tab]'); if(b) switchTab(b.dataset.tab);
+});
+
+function render(){
+  if(activeTab==='dash') renderDash();
+  if(activeTab==='qc-analysis') renderQCAnalysis();
+  if(activeTab==='upload') renderUpload();
+  if(activeTab==='list') renderList();
+  if(activeTab==='qa') renderQA();
+  if(activeTab==='receive') renderReceive();
+  if(activeTab==='trace') renderTrace();
+  if(activeTab==='spec') renderSpec();
+  if(activeTab==='certtemplate') renderCertTemplate();
+}
+
+/* ---------- Dashboard ---------- */
+function renderDash(){
+  const evaluated = DATA.map(d=>({d, ev:computeEval(d)}));
+  const total=DATA.length;
+  const pending=DATA.filter(d=>d.qa==='Pending Review').length;
+  const passed=evaluated.filter(x=>x.ev.overall==='pass').length;
+  const warn=evaluated.filter(x=>x.ev.overall==='warn').length;
+  const fail=evaluated.filter(x=>x.ev.overall==='fail').length;
+
+  const donutData=[['ผ่าน',passed,'var(--ok)'],['เฝ้าระวัง',warn,'var(--amber)'],['ไม่ผ่าน',fail,'var(--danger)']];
+  const total2=Math.max(1,passed+warn+fail);
+  let accDeg=0;
+  const stops=donutData.map(([l,v,c])=>{ const start=accDeg; const deg=v/total2*360; accDeg+=deg; return `${c} ${start}deg ${accDeg}deg`; }).join(', ');
+
+  document.getElementById('tab-dash').innerHTML = `
+    <h1 class="page">แดชบอร์ดภาพรวม COA</h1>
+    <p class="sub">สรุปสถานะใบรับรองผลวิเคราะห์ (COA) ทั้งหมดแบบเรียลไทม์ และการออก COA จากสายการผลิต</p>
+    <div class="grid-stats">
+      <div class="stat"><div class="n">${total}</div><div class="l">COA ทั้งหมด</div></div>
+      <div class="stat pending"><div class="n">${pending}</div><div class="l">รอตรวจสอบ QA</div></div>
+      <div class="stat pass"><div class="n">${passed}</div><div class="l">ผ่านสเปค</div></div>
+      <div class="stat warn"><div class="n">${warn}</div><div class="l">เฝ้าระวัง</div></div>
+      <div class="stat fail"><div class="n">${fail}</div><div class="l">ไม่ผ่านสเปค</div></div>
+    </div>
+    <div class="panels">
+      <div class="card">
+        <h3>สัดส่วนสถานะ COA</h3>
+        <div class="donut-wrap">
+          <div style="width:110px;height:110px;border-radius:50%;background:conic-gradient(${stops});flex:none;"></div>
+          <div class="legend">${donutData.map(([l,v,c])=>`<div><span class="dot" style="background:${c}"></span>${l} (${v})</div>`).join('')}</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>การวิเคราะห์คุณภาพล่าสุด (FM-QA-24 / 19)</h3>
+        <p style="font-size:13px;color:var(--ink-soft)">บันทึกแล้ว <b>${QC_DATA.length}</b> รายการ พร้อมออกใบ COA สำเร็จรูป</p>
+        <button class="btn primary small" onclick="switchTab('qc-analysis')">ไปที่หน้าวิเคราะห์คุณภาพ →</button>
+      </div>
+    </div>
+  `;
+}
+
+/* =========================================================================
+   NEW FEATURE: เมนูหลัก การวิเคราะห์คุณภาพ (FM-QA-24 & FM-QA-19 -> FM-QA-25)
+   ========================================================================= */
+function renderQCAnalysis() {
+  document.getElementById('tab-qc-analysis').innerHTML = `
+    <h1 class="page">🔬 บันทึกการวิเคราะห์คุณภาพ (FM-QA-24 & FM-QA-19)</h1>
+    <p class="sub">บันทึกผลวิเคราะห์คุณภาพทางเคมี-กายภาพ และผลการตรวจบรรจุภัณฑ์ เพื่อออกใบ COA อัตโนมัติ</p>
+
+    <!-- ข้อมูลทั่วไป -->
+    <div class="card" style="margin-bottom:16px;">
+      <h3 style="border-bottom:1.5px solid var(--teal);padding-bottom:6px;color:var(--teal);">1. ข้อมูลการสั่งผลิตและจัดส่ง</h3>
+      <div class="form-grid">
+        <div><label>ชนิดผลิตภัณฑ์</label>
+          <select id="qc-product">
+            <option value="Icing Sugar">Icing Sugar</option>
+            <option value="Sugar Milled 40s">Sugar Milled 40s</option>
+            <option value="Caster Sugar 30s">Caster Sugar 30s</option>
+            <option value="Ground Sugar">Ground Sugar</option>
+          </select>
+        </div>
+        <div><label>Lot No. ผลิตภัณฑ์</label><input id="qc-lot" placeholder="เช่น IC260801"></div>
+        <div><label>ชื่อลูกค้า (Customer)</label><input id="qc-customer" placeholder="ระบุชื่อลูกค้า"></div>
+        <div><label>วันที่ผลิต (MFG Date)</label><input id="qc-mfg-date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div><label>วันที่หมดอายุ (EXP Date)</label><input id="qc-exp-date" type="date"></div>
+        <div><label>กำหนดส่งมอบ (Delivery Date)</label><input id="qc-deliv-date" type="date"></div>
+      </div>
+    </div>
+
+    <!-- ฟอร์ม FM-QA-24 -->
+    <div class="card" style="margin-bottom:16px;">
+      <h3 style="border-bottom:1.5px solid var(--teal);padding-bottom:6px;color:var(--teal);">2. รายงานผลการวิเคราะห์คุณภาพผลิตภัณฑ์สำเร็จรูป (FM-QA-24 Rev.01)</h3>
+      <div class="form-grid">
+        <div><label>Moisture Content (%)</label><input id="qa24-moisture" type="number" step="0.01" placeholder="เช่น 0.04"></div>
+        <div><label>Polarization (Degree °Z)</label><input id="qa24-polar" type="number" step="0.01" placeholder="เช่น 99.80"></div>
+        <div><label>Color (ICUMSA)</label><input id="qa24-color" type="number" placeholder="เช่น 45"></div>
+        <div><label>Invert Sugar (% w/w)</label><input id="qa24-invert" type="number" step="0.001" placeholder="เช่น 0.02"></div>
+        <div><label>Particle Size (% ผ่านตะแกรง 180µ)</label><input id="qa24-particle-pass" type="number" step="0.1" placeholder="เช่น 98.5"></div>
+        <div><label>Particle Size (% ค้างบนตะแกรง 180µ)</label><input id="qa24-particle-ret" type="number" step="0.1" placeholder="เช่น 1.5"></div>
+      </div>
+      <div class="form-grid">
+        <div><label>ลักษณะปรากฏ (Appearance)</label><input id="qa24-app" value="White Powder"></div>
+        <div><label>กลิ่น (Odor)</label><input id="qa24-odor" value="No off odor"></div>
+        <div><label>รสชาติ (Taste)</label><input id="qa24-taste" value="Sweet"></div>
+      </div>
+      <div class="form-grid">
+        <div><label>สิ่งแปลกปลอมในการร่อนผ่านตะแกรง</label>
+          <select id="qa24-foreign">
+            <option value="ผ่าน ไม่พบสิ่งแปลกปลอม">ผ่าน ไม่พบสิ่งแปลกปลอม (✓)</option>
+            <option value="พบสิ่งแปลกปลอม">ไม่ผ่าน พบสิ่งแปลกปลอม (X)</option>
+          </select>
+        </div>
+        <div><label>ผู้วิเคราะห์ (Report By)</label><input id="qa24-analyst" placeholder="เจ้าหน้าที่/ผช.หน.ฝ่าย QA"></div>
+        <div><label>ผู้ทวนสอบ (Approved By)</label><input id="qa24-verifier" placeholder="หัวหน้าฝ่าย QA"></div>
+      </div>
+    </div>
+
+    <!-- ฟอร์ม FM-QA-19 -->
+    <div class="card" style="margin-bottom:16px;">
+      <h3 style="border-bottom:1.5px solid var(--teal);padding-bottom:6px;color:var(--teal);">3. รายงานการตรวจสอบการบรรจุผลิตภัณฑ์ (FM-QA-19 Rev.02)</h3>
+      <div class="form-grid">
+        <div><label>น้ำหนักสุทธิต่อถุง (Net Weight Kg/Bag)</label><input id="qa19-netweight" type="number" step="0.01" value="25.00"></div>
+        <div><label>น้ำหนักรวมบรรจุภัณฑ์ชั้นใน (Gross Wt.)</label><input id="qa19-grossweight" type="number" step="0.01" value="25.08"></div>
+        <div><label>จำนวนที่ผลิตได้ (Bags)</label><input id="qa19-bags" type="number" placeholder="เช่น 200"></div>
+        <div><label>ปริมาณรวมสุทธิ (MT)</label><input id="qa19-total-mt" type="number" step="0.001" placeholder="คำนวณอัตโนมัติ" readonly style="background:var(--line-soft)"></div>
+        <div><label>สภาพบรรจุภัณฑ์และรอยเย็บ</label>
+          <select id="qa19-pack-status">
+            <option value="ผ่าน">สมบูรณ์ ไม่ฉีกขาด รอยเย็บเรียบร้อย (✓)</option>
+            <option value="ไม่ผ่าน">ชำรุด / มีรอยเปื้อน (X)</option>
+          </select>
+        </div>
+        <div><label>รายละเอียดฉลาก &amp; สีด้ายเย็บ</label>
+          <select id="qa19-label-status">
+            <option value="ผ่าน">ถูกต้อง ครบถ้วน (✓)</option>
+            <option value="ไม่ผ่าน">ไม่ถูกต้อง (X)</option>
+          </select>
+        </div>
+      </div>
+      <div style="text-align:right;margin-top:14px;">
+        <button class="btn primary" id="btn-save-qc-coa">💾 บันทึกผลวิเคราะห์ &amp; ส่งออกเป็น COA (FM-QA-25) →</button>
+      </div>
+    </div>
+
+    <!-- ตารางประวัติ -->
+    <div class="rowline"><h3 style="margin:0;font-size:14px;">รายการประวัติการวิเคราะห์คุณภาพล่าสุด</h3></div>
+    <div class="card" style="padding:0;overflow:auto">
+      <table>
+        <tr>
+          <th>Lot No.</th><th>สินค้า</th><th>ลูกค้า</th><th>วันที่ผลิต</th><th>Moisture</th><th>จำนวนบรรจุ</th><th>สถานะ</th><th>เอกสาร COA</th>
+        </tr>
+        <tbody id="qc-history-body"></tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById('qa19-bags').addEventListener('input', calculateTotalMT);
+  document.getElementById('qa19-netweight').addEventListener('input', calculateTotalMT);
+  document.getElementById('btn-save-qc-coa').onclick = saveQCAndGenerateCOA;
+  renderQCHistory();
+}
+
+function calculateTotalMT() {
+  const bags = parseFloat(document.getElementById('qa19-bags').value) || 0;
+  const net = parseFloat(document.getElementById('qa19-netweight').value) || 0;
+  if(bags && net) {
+    document.getElementById('qa19-total-mt').value = ((bags * net) / 1000).toFixed(3);
+  }
+}
+
+function saveQCAndGenerateCOA() {
+  const lot = document.getElementById('qc-lot').value.trim();
+  const product = document.getElementById('qc-product').value;
+  const customer = document.getElementById('qc-customer').value.trim();
+  const mfgDate = document.getElementById('qc-mfg-date').value;
+  const expDate = document.getElementById('qc-exp-date').value;
+  const delivDate = document.getElementById('qc-deliv-date').value;
+
+  if(!lot) {
+    alert('กรุณากรอก Lot No. ผลิตภัณฑ์');
+    return;
+  }
+
+  const params = [
+    { name: 'Appearance', result: document.getElementById('qa24-app').value, unit: '-' },
+    { name: 'Odor', result: document.getElementById('qa24-odor').value, unit: '-' },
+    { name: 'Taste', result: document.getElementById('qa24-taste').value, unit: '-' },
+    { name: 'Moisture', result: document.getElementById('qa24-moisture').value, unit: '%' },
+    { name: 'Polarization', result: document.getElementById('qa24-polar').value, unit: 'Degree °Z' },
+    { name: 'Color', result: document.getElementById('qa24-color').value, unit: 'Icumsa' },
+    { name: 'Invert Sugar', result: document.getElementById('qa24-invert').value, unit: '% w/w' },
+    { name: 'Particle Size (Through 180µ)', result: document.getElementById('qa24-particle-pass').value, unit: '%' },
+    { name: 'Particle Size (Retained 180µ)', result: document.getElementById('qa24-particle-ret').value, unit: '%' },
+  ].filter(p => p.result !== '');
+
+  const packInfo = {
+    netWeightPerBag: document.getElementById('qa19-netweight').value,
+    grossWeight: document.getElementById('qa19-grossweight').value,
+    amountBags: document.getElementById('qa19-bags').value,
+    quantityReceived: document.getElementById('qa19-total-mt').value,
+    packageCheck: document.getElementById('qa19-pack-status').value,
+    labelCheck: document.getElementById('qa19-label-status').value
+  };
+
+  const reportBy = document.getElementById('qa24-analyst').value;
+  const approvedBy = document.getElementById('qa24-verifier').value;
+  const ownCoaNo = 'COA-' + lot;
+
+  const record = {
+    id: crypto.randomUUID(),
+    lot, product, customer, mfgDate, expDate, delivDate,
+    params, packInfo, reportBy, approvedBy,
+    date: new Date().toISOString().slice(0,10)
+  };
+  QC_DATA.unshift(record);
+  saveQCAnalysisData();
+
+  // สร้างบันทึก COA กลาง (FM-QA-25)
+  DATA.unshift({
+    id: crypto.randomUUID(),
+    supplier: CERT_TEMPLATE.en,
+    coaNo: ownCoaNo,
+    lot: lot,
+    product: product,
+    date: record.date,
+    params: params,
+    qa: 'Approved',
+    note: 'ออกผลวิเคราะห์จาก FM-QA-24 & FM-QA-19',
+    type: 'internal',
+    received: true,
+    meta: {
+      quantityReceived: packInfo.quantityReceived,
+      productionDate: mfgDate,
+      expireDate: expDate,
+      customer: customer,
+      deliveryDate: delivDate,
+      netWeightPerBag: packInfo.netWeightPerBag,
+      amountBags: packInfo.amountBags,
+      reportBy: reportBy,
+      approvedBy: approvedBy
+    },
+    log: [
+      { t: record.date, e: 'บันทึกการวิเคราะห์คุณภาพ FM-QA-24 และตรวจสอบการบรรจุ FM-QA-19' },
+      { t: record.date, e: `ออก COA เลขที่ ${ownCoaNo} อัตโนมัติ` }
+    ]
+  });
+  saveData();
+
+  alert(`บันทึก FM-QA-24 และ FM-QA-19 สำเร็จ! ออกใบ COA เลขที่ ${ownCoaNo} เรียบร้อยแล้ว`);
+  renderQCAnalysis();
+}
+
+function renderQCHistory() {
+  const body = document.getElementById('qc-history-body');
+  if(!QC_DATA.length) {
+    body.innerHTML = `<tr><td colspan="8"><div class="empty">ยังไม่มีประวัติการวิเคราะห์</div></td></tr>`;
+    return;
+  }
+  body.innerHTML = QC_DATA.map(d => {
+    const moisture = d.params.find(p=>p.name==='Moisture')?.result || '-';
+    return `
+      <tr>
+        <td class="mono"><b>${d.lot}</b></td>
+        <td>${d.product}</td>
+        <td>${d.customer || '-'}</td>
+        <td>${d.mfgDate}</td>
+        <td>${moisture}%</td>
+        <td>${d.packInfo.amountBags || 0} ถุง (${d.packInfo.quantityReceived || 0} MT)</td>
+        <td><span class="badge pass">พร้อมออก COA</span></td>
+        <td>
+          <button class="btn small primary" onclick="printCOAByLot('${d.lot}')">🖨️ พิมพ์ COA</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function printCOAByLot(lot) {
+  const doc = DATA.find(d => d.lot === lot && d.type === 'internal');
+  if(doc) {
+    printOwnCOA(doc.id);
+  } else {
+    alert('ไม่พบเอกสาร COA สำหรับ Lot นี้');
+  }
+}
+
+/* ---------- Upload / OCR ---------- */
+let uploadProduct = Object.keys(SPECS)[0] || '';
+let uploadParams = [];
+
+function templateParamsFor(product){
+  const spec = SPECS[product] || [];
+  return spec.map(s=>({name:s.name, result:'', unit:s.unit}));
+}
+if(uploadProduct) uploadParams = templateParamsFor(uploadProduct);
+
+function renderUpload(){
+  const productOptions = Object.keys(SPECS).map(p=>`<option value="${p}" ${p===uploadProduct?'selected':''}>${p}</option>`).join('');
+  document.getElementById('tab-upload').innerHTML = `
+    <h1 class="page">อัปโหลด COA ผู้จำหน่าย (Supplier COA)</h1>
+    <p class="sub">บันทึกหรือเทียบผลวิเคราะห์จากผู้จำหน่ายวัตถุดิบเข้าสู่ระบบ</p>
+    <div class="card">
+      <div class="form-grid">
+        <div><label>Supplier</label><input id="f-supplier" placeholder="เช่น Thai Roong Ruang"></div>
+        <div><label>COA No.</label><input id="f-coa" placeholder="COA-XXXX-XXXX"></div>
+        <div><label>Lot No.</label><input id="f-lot" placeholder="Lot No."></div>
+        <div>
+          <label>Product</label>
+          <select id="f-product">${productOptions}</select>
+        </div>
+        <div><label>Issue Date</label><input id="f-date" type="date"></div>
+      </div>
+      <table class="param-table">
+        <tr><th>Parameter</th><th>Result</th><th>Unit</th><th>Specification</th><th></th></tr>
+        <tbody id="param-body"></tbody>
+      </table>
+      <div id="statusPreview"></div>
+      <div style="margin-top:16px;">
+        <button class="btn primary" id="btn-submit">ส่งเข้าสู่การตรวจสอบ QA →</button>
+      </div>
+    </div>
+  `;
+  renderParamRows();
+  document.getElementById('f-product').onchange=(e)=>{
+    uploadProduct=e.target.value;
+    uploadParams = templateParamsFor(uploadProduct);
+    renderParamRows();
+  };
+  document.getElementById('btn-submit').onclick=submitCOA;
+}
+
+function renderParamRows(){
+  const spec = SPECS[uploadProduct]||[];
+  const body=document.getElementById('param-body');
+  body.innerHTML = uploadParams.map((p,i)=>{
+    const s=spec.find(x=>x.name===p.name);
+    return `<tr>
+      <td><input value="${p.name}" data-i="${i}" data-f="name"></td>
+      <td><input value="${p.result}" type="text" data-i="${i}" data-f="result" style="width:90px"></td>
+      <td><input value="${p.unit}" data-i="${i}" data-f="unit" style="width:80px"></td>
+      <td class="mono" style="font-size:12px;color:var(--ink-soft)">${fmtSpec(s)}</td>
+      <td><button class="btn small ghost" data-del="${i}">ลบ</button></td>
+    </tr>`;
+  }).join('');
+  body.querySelectorAll('input').forEach(inp=>{
+    inp.oninput=()=>{ uploadParams[inp.dataset.i][inp.dataset.f]=inp.value; updatePreview(); };
+  });
+  body.querySelectorAll('button[data-del]').forEach(btn=>{ btn.onclick=()=>{ uploadParams.splice(btn.dataset.del,1); renderParamRows(); }; });
+  updatePreview();
+}
+
+function updatePreview(){
+  const spec = SPECS[uploadProduct]||[];
+  const clean = uploadParams.filter(p=>p.name && p.result!==undefined && p.result!=='');
+  const {overall} = evalParams(clean, spec);
+  const map={pass:['ok','ทุกพารามิเตอร์อยู่ในสเปค'],warn:['warn','มีพารามิเตอร์ที่ขาดหรือควรเฝ้าระวัง'],fail:['fail','พบค่าที่ไม่ผ่านสเปค']};
+  const [cls,msg]=map[overall];
+  document.getElementById('statusPreview').innerHTML = `<div class="status-line ${cls}">${msg}</div>`;
+}
+
+function submitCOA(){
+  const supplier=document.getElementById('f-supplier').value.trim();
+  const coaNo=document.getElementById('f-coa').value.trim();
+  const product = document.getElementById('f-product').value;
+  const lot=document.getElementById('f-lot').value.trim();
+  const date=document.getElementById('f-date').value || new Date().toISOString().slice(0,10);
+  if(!supplier||!coaNo||!product){ alert('กรุณากรอก Supplier, COA No. และ Product'); return; }
+  const clean = uploadParams.filter(p=>p.name && p.result!==undefined && p.result!=='');
+  DATA.unshift({id:crypto.randomUUID(),supplier,coaNo,lot,product,date,params:clean,qa:'Pending Review',note:'',
+    type:'supplier',received:false,
+    log:[{t:date,e:'สร้างรายการ COA ผ่านการอัปโหลด'}]});
+  saveData();
+  switchTab('list');
+}
+
+/* ---------- List ---------- */
+function renderList(){
+  document.getElementById('tab-list').innerHTML = `
+    <h1 class="page">รายการ COA ทั้งหมด</h1>
+    <p class="sub">ค้นหาและตรวจสอบใบ COA ทั้งจากผู้จำหน่ายและของตนเอง</p>
+    <div class="toolbar">
+      <select id="filter-type"><option value="">ทุกประเภท</option><option value="supplier">COA ผู้จำหน่าย</option><option value="internal">COA ของตนเอง</option></select>
+      <input id="filter-search" placeholder="ค้นหา Supplier / COA No. / Lot">
+    </div>
+    <div class="card" style="padding:0;overflow:auto">
+      <table>
+        <tr><th>COA No.</th><th>ประเภท</th><th>Supplier / บริษัท</th><th>Product</th><th>Lot</th><th>Date</th><th>ผลตรวจ</th><th>การจัดการ</th></tr>
+        <tbody id="list-body"></tbody>
+      </table>
+    </div>
+  `;
+  const draw=()=>{
+    const ty=document.getElementById('filter-type').value;
+    const q=document.getElementById('filter-search').value.toLowerCase();
+    const rows=DATA.filter(d=>{
+      const ev=computeEval(d);
+      return (!ty||(d.type||'supplier')===ty) && (!q || [d.supplier,d.coaNo,d.lot].join(' ').toLowerCase().includes(q));
+    });
+    document.getElementById('list-body').innerHTML = rows.length ? rows.map(d=>{
+      const ev=computeEval(d);
+      return `<tr>
+        <td class="mono">${d.coaNo}</td><td>${typeBadge(d)}</td><td>${d.supplier}</td><td>${d.product||'—'}</td><td>${d.lot||'—'}</td><td>${d.date}</td>
+        <td>${statusBadge(ev.overall)}</td>
+        <td>
+          <button class="btn small" data-view="${d.id}">ดูรายละเอียด</button>
+          ${d.type==='internal'?`<button class="btn small primary" onclick="printOwnCOA('${d.id}')">🖨️ พิมพ์</button>`:''}
+        </td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="8"><div class="empty">ไม่พบรายการ</div></td></tr>`;
+    document.getElementById('list-body').querySelectorAll('button[data-view]').forEach(b=>b.onclick=()=>openDetail(b.dataset.view));
+  };
+  document.getElementById('filter-type').onchange=draw;
+  document.getElementById('filter-search').oninput=draw;
+  draw();
+}
+
+function openDetail(id){
+  const d=DATA.find(x=>x.id===id); if(!d) return;
+  const ev=computeEval(d);
+  document.getElementById('modalBody').className='modal';
+  document.getElementById('modalBody').innerHTML = `
+    <h3>${d.coaNo} — ${d.supplier} ${typeBadge(d)}</h3>
+    <p class="sub">${d.product||'—'} • Lot ${d.lot||'—'} • ออกวันที่ ${d.date}</p>
+    <table class="param-table">
+      <tr><th>Parameter</th><th>Result</th><th>Specification</th><th>สถานะ</th></tr>
+      ${ev.params.map(p=>`<tr><td>${p.name}</td><td>${p.result!==null?p.result+' '+(p.unit||''):'—'}</td><td>${fmtSpec(p.spec)}</td><td>${statusBadge(p.status)}</td></tr>`).join('')}
+    </table>
+    <div style="text-align:right;margin-top:16px"><button class="btn" onclick="closeModal()">ปิด</button></div>
+  `;
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){ document.getElementById('modalBg').classList.remove('open'); }
+document.getElementById('modalBg').addEventListener('click', e=>{ if(e.target.id==='modalBg') closeModal(); });
+
+/* ---------- Print COA Document (FM-QA-25 Rev.01) ---------- */
+function printOwnCOA(id){
+  const d=DATA.find(x=>x.id===id); if(!d) return;
+  const ev=computeEval(d);
+  const m=d.meta||{};
+  const particle = ev.params.filter(p=>p.name.startsWith('Particle Size'));
+  const other = ev.params.filter(p=>!p.name.startsWith('Particle Size'));
+  let rows = other.map(p=>`<tr><td>${p.name}</td><td>${fmtSpec(p.spec)}</td><td>${p.result!==null?p.result:'-'}</td><td>${p.unit||'-'}</td></tr>`).join('');
+  if(particle.length){
+    rows += `<tr><td rowspan="${particle.length+1}" style="vertical-align:top">Particle Size</td><td colspan="3"></td></tr>` +
+      particle.map(p=>{
+        const sub = /through/i.test(p.name) ? 'Through sieve 180 microns' : /retained/i.test(p.name) ? 'Retained sieve 180 microns' : p.name;
+        return `<tr><td>${sub}</td><td>${fmtSpec(p.spec)}</td><td>${p.result!==null?p.result:'-'}</td><td>${p.unit||'-'}</td></tr>`;
+      }).join('');
+  }
+  document.getElementById('printArea').innerHTML = `
+    <div class="print-doc">
+      <div class="pheadrow">
+        <div class="phead">
+          <div class="th-name">${CERT_TEMPLATE.th}</div>
+          <div class="en-name">${CERT_TEMPLATE.en}</div>
+        </div>
+        <div class="formcode">${CERT_TEMPLATE.formCode}</div>
+      </div>
+      <div class="ptitle">${CERT_TEMPLATE.title}</div>
+      <div class="pproduct">${d.product}</div>
+      <table class="infogrid">
+        <tr><td style="width:50%"><b>Producer Information</b></td><td style="width:50%"><b>Customer Information</b></td></tr>
+        <tr><td>Quantity Received&nbsp;&nbsp;&nbsp;&nbsp;${m.quantityReceived||'-'} MT</td><td>Delivery Date&nbsp;&nbsp;&nbsp;&nbsp;${m.deliveryDate||'-'}</td></tr>
+        <tr><td>Production Date&nbsp;&nbsp;&nbsp;&nbsp;${m.productionDate||d.date}</td><td>Customer&nbsp;&nbsp;&nbsp;&nbsp;${m.customer||'-'}</td></tr>
+        <tr><td>Expire Date&nbsp;&nbsp;&nbsp;&nbsp;${m.expireDate||'-'}</td><td>Quantity&nbsp;&nbsp;&nbsp;&nbsp;${(parseFloat(m.quantityReceived)*1000)||'-'} Kg.</td></tr>
+        <tr><td>Lot No.&nbsp;&nbsp;&nbsp;&nbsp;${d.lot||'-'}</td><td>Net Weight (per bag)&nbsp;&nbsp;&nbsp;&nbsp;${m.netWeightPerBag||'-'} Kg.</td></tr>
+        <tr><td>Date received to warehouse (Raw Material)&nbsp;&nbsp;&nbsp;&nbsp;${d.date}</td><td>Amount&nbsp;&nbsp;&nbsp;&nbsp;${m.amountBags||'-'} Bags</td></tr>
+      </table>
+      <table>
+        <tr><th>Item</th><th>Specification</th><th>Analysis Result</th><th>Unit</th></tr>
+        ${rows}
+      </table>
+      <div class="sig">
+        <div>Report By…………………………….<br>(${m.reportBy||'________________'})</div>
+        <div>Approved By…………………………….<br>(${m.approvedBy||'________________'})</div>
+      </div>
+      <div class="pfoot">
+        <div>${CERT_TEMPLATE.th}</div>
+        <div>${CERT_TEMPLATE.address}</div>
+        <div>${CERT_TEMPLATE.tel}</div>
+      </div>
+    </div>
+  `;
+  window.print();
+}
+
+/* ---------- QA Review ---------- */
+function renderQA(){
+  const pending = DATA.filter(d=>d.qa==='Pending Review');
+  document.getElementById('tab-qa').innerHTML = `
+    <h1 class="page">QA / QC Review — ตรวจสอบและอนุมัติ</h1>
+    <p class="sub">ตรวจสอบ COA วัตถุดิบเพื่ออนุมัติรับเข้าสู่กระบวนการผลิต</p>
+    <div class="card" style="padding:0;overflow:auto">
+      <table>
+        <tr><th>COA No.</th><th>Supplier</th><th>Product</th><th>ผลตรวจ</th><th>การตัดสินใจ</th></tr>
+        <tbody>
+        ${pending.length ? pending.map(d=>{
+          const ev=computeEval(d);
+          return `<tr>
+            <td class="mono">${d.coaNo}</td><td>${d.supplier}</td><td>${d.product\vert{}\vert{}'—'}</td><td>${statusBadge(ev.overall)}</td>
+            <td><button class="btn small primary" onclick="decide('${d.id}','Approved')">Approve</button> <button class="btn small danger" onclick="decide('${d.id}','Rejected')">Reject</button></td>
+          </tr>`;
+        }).join('') : `<tr><td colspan="5"><div class="empty">ไม่มีรายการรอตรวจสอบ 🎉</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+function decide(id, decision){
+  const d=DATA.find(x=>x.id===id); if(!d) return;
+  d.qa=decision;
+  d.log.push({t:new Date().toISOString().slice(0,10), e:`${decision} โดย QA`});
+  saveData(); renderQA();
+}
+
+/* ---------- Receiving & Trace & Spec Templates ---------- */
+function renderReceive(){
+  document.getElementById('tab-receive').innerHTML = `
+    <h1 class="page">รับเข้าวัตถุดิบ</h1>
+    <p class="sub">รับเข้าวัตถุดิบที่ผ่านการ Approve และเตรียมนำไปใช้ในสายการผลิต</p>
+    <div class="card"><p style="font-size:13px;color:var(--ink-soft)">ระบบบันทึกรับเข้าทำงานร่วมกับโมดูล COA ของผู้จำหน่าย</p></div>
+  `;
+}
+
+function renderTrace(){
+  document.getElementById('tab-trace').innerHTML = `
+    <h1 class="page">Traceability</h1>
+    <p class="sub">การเชื่อมโยงย้อนกลับจากสินค้าสำเร็จรูป สู่ชุดตรวจ FM-QA-24 / 19 และวัตถุดิบ</p>
+    <div class="card"><p style="font-size:13px;color:var(--ink-soft)">รองรับการตรวจสอบย้อนกลับทั้งแบบ Forward และ Backward Traceability</p></div>
+  `;
+}
+
+function renderSpec(){
+  document.getElementById('tab-spec').innerHTML = `
+    <h1 class="page">ตั้งค่า Specification</h1>
+    <p class="sub">กำหนดมาตรฐานสเปคของแต่ละชนิดผลิตภัณฑ์</p>
+    <div class="card"><p style="font-size:13px;color:var(--ink-soft)">สามารถแก้ไขและเพิ่มเกณฑ์มาตรฐานในฟังก์ชัน SPECS</p></div>
+  `;
+}
+
+function renderCertTemplate(){
+  const t=CERT_TEMPLATE;
+  document.getElementById('tab-certtemplate').innerHTML = `
+    <h1 class="page">ตั้งค่าแบบฟอร์ม COA</h1>
+    <p class="sub">ปรับแต่งหัวกระดาษและเลขที่ฟอร์ม (FM-QA-25)</p>
+    <div class="card">
+      <div class="form-grid">
+        <div><label>ชื่อบริษัท (TH)</label><input id="ct-th" value="${t.th}"></div>
+        <div><label>ชื่อบริษัท (EN)</label><input id="ct-en" value="${t.en}"></div>
+        <div><label>เลขที่ฟอร์ม COA</label><input id="ct-form" value="${t.formCode}"></div>
+      </div>
+    </div>
+  `;
+}
+
+// เริ่มต้นการทำงาน
+render();
+</script>
+</body>
+</html>
