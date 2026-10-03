@@ -37,12 +37,12 @@ h1.page{font-size:24px;margin:0 0 4px;font-weight:700;}
 p.sub{margin:0 0 18px;color:var(--ink-soft);font-size:15px;}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px;}
 .card h3{margin:0 0 10px;font-size:17px;font-weight:700;}
-.sub-box{background:#FAF9F5;border:1px dashed var(--line);border-radius:8px;padding:12px;margin-bottom:12px;}
+.sub-box{background:#FAF9F5;border:1px dashed var(--line);border-radius:8px;padding:12px;margin-bottom:12px;position:relative;}
 .grid-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px;}
 .stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px;}
 .stat .n{font-size:28px;font-weight:700;line-height:1.1;}
 .stat .l{font-size:14px;color:var(--ink-soft);margin-top:2px;}
-.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 14px;margin-bottom:12px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 14px;margin-bottom:12px;}
 .form-grid label{font-size:14px;color:var(--ink-soft);display:block;margin-bottom:2px;font-weight:600;}
 .form-grid input, .form-grid select{width:100%;font-family:inherit;font-size:15px;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);}
 button.btn{font-family:inherit;font-size:15px;padding:6px 14px;border-radius:7px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;}
@@ -96,7 +96,6 @@ td input, td select{font-family:inherit;font-size:14px;padding:4px 5px;border-ra
 <script>
 let activeTab = 'dash';
 
-// ฐานข้อมูลสินค้ารองรับการ Map รหัสและชื่อ
 const PRODUCT_CATALOG = {
   'IC-001': 'Icing Sugar',
   'SM-040': 'Sugar Milled 40s',
@@ -104,15 +103,45 @@ const PRODUCT_CATALOG = {
   'GS-001': 'Ground Sugar'
 };
 
+// วัตถุดิบรอง (2, 3, ...) เพิ่มได้อิสระ
+let extraIngredients = [
+  { id: 2, code: 'RM-ST-02', name: 'Tapioca Starch', ratio: 3.0, recv: getTodayDMY(), mfg: '', exp: '' }
+];
+
 let currentBatches = [
   { batchNo: '1', amount: 40, time: '09:00', moisture: 0.04, partThrough: 98.5, partRet: 1.5, sieveCheck: 'ผ่าน', w1: 25.08, w2: 25.08, w3: 25.06, w4: 25.08, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' },
   { batchNo: '2', amount: 40, time: '10:30', moisture: 0.03, partThrough: 98.8, partRet: 1.2, sieveCheck: 'ผ่าน', w1: 25.06, w2: 25.08, w3: 25.08, w4: 25.06, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' },
   { batchNo: '3', amount: 40, time: '12:00', moisture: 0.04, partThrough: 98.4, partRet: 1.6, sieveCheck: 'ผ่าน', w1: 25.08, w2: 25.06, w3: 25.08, w4: 25.08, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' }
 ];
 
+// แปลงรูปแบบวันที่ Date -> dd/mm/yyyy
+function formatDMY(date){
+  if(!date || isNaN(date.getTime())) return '';
+  const d = String(date.getDate()).padStart(2, '0');
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const y = date.getFullYear();
+  return `${d}/${m}/${y}`;
+}
+
+// แปลง dd/mm/yyyy -> Date Object
+function parseDMY(str){
+  if(!str) return null;
+  const parts = str.trim().split('/');
+  if(parts.length !== 3) return null;
+  const d = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10) - 1;
+  const y = parseInt(parts[2], 10);
+  const dt = new Date(y, m, d);
+  return isNaN(dt.getTime()) ? null : dt;
+}
+
+function getTodayDMY(){
+  return formatDMY(new Date());
+}
+
 function getQCData(){
   try{
-    const r = localStorage.getItem('pgi_qc_data_v6');
+    const r = localStorage.getItem('pgi_qc_data_v7');
     if(r) return JSON.parse(r);
   }catch(e){}
   return [];
@@ -120,7 +149,7 @@ function getQCData(){
 
 function saveQCData(data){
   try{
-    localStorage.setItem('pgi_qc_data_v6', JSON.stringify(data));
+    localStorage.setItem('pgi_qc_data_v7', JSON.stringify(data));
   }catch(e){}
 }
 
@@ -170,7 +199,7 @@ function renderDash(){
   `;
 }
 
-// ฟังก์ชันคำนวณวันหมดอายุอัตโนมัติ
+// คำนวณวันหมดอายุอัตโนมัติ (1 ปี / Ground Sugar 6 เดือน / ลูกค้าพิเศษ 2 ปี)
 function calculateExpDate(){
   const mfgInput = document.getElementById('qc-mfg');
   const expInput = document.getElementById('qc-exp');
@@ -179,8 +208,8 @@ function calculateExpDate(){
 
   if(!mfgInput || !mfgInput.value) return;
 
-  const mfg = new Date(mfgInput.value);
-  if(isNaN(mfg.getTime())) return;
+  const mfg = parseDMY(mfgInput.value);
+  if(!mfg) return;
 
   const isGroundSugar = (prodSelect && prodSelect.value === 'Ground Sugar');
   const isSpecialCust = (custSelect && custSelect.value === 'SPECIAL_2Y');
@@ -194,11 +223,11 @@ function calculateExpDate(){
     exp.setFullYear(exp.getFullYear() + 1);
   }
 
-  expInput.value = exp.toISOString().slice(0, 10);
+  expInput.value = formatDMY(exp);
 }
 
 function renderQCAnalysis(){
-  const todayStr = new Date().toISOString().slice(0,10);
+  const todayStr = getTodayDMY();
 
   document.getElementById('tab-qc-analysis').innerHTML = `
     <h1 class="page">🔬 บันทึกการวิเคราะห์คุณภาพ &amp; ตรวจการบรรจุ (FM-QA-24 / FM-QA-19)</h1>
@@ -240,30 +269,27 @@ function renderQCAnalysis(){
           <input id="qc-cust-custom" placeholder="พิมพ์ชื่อลูกค้าใหม่ที่นี่" style="display:none;margin-top:4px;">
         </div>
         <div>
-          <label>วันที่ผลิต (MFG Date)</label>
-          <input id="qc-mfg" type="date" value="${todayStr}">
+          <label>วันที่ผลิต (dd/mm/yyyy)</label>
+          <input id="qc-mfg" placeholder="dd/mm/yyyy" value="${todayStr}">
         </div>
         <div>
-          <label>วันที่หมดอายุ (EXP Date)</label>
-          <input id="qc-exp" type="date">
+          <label>วันที่หมดอายุ (dd/mm/yyyy)</label>
+          <input id="qc-exp" placeholder="dd/mm/yyyy">
         </div>
         <div>
-          <label>กำหนดส่งวันที่ (Delivery Date)</label>
-          <input id="qc-deliv" type="date">
+          <label>กำหนดส่งวันที่ (dd/mm/yyyy)</label>
+          <input id="qc-deliv" placeholder="dd/mm/yyyy (เว้นว่างได้)">
         </div>
       </div>
 
       <!-- อัตราส่วนผสมผลิตภัณฑ์และวัตถุดิบ -->
       <h4 style="margin:14px 0 8px;color:var(--teal)">🧪 อัตราส่วนผสมผลิตภัณฑ์ (Recipe &amp; Raw Materials)</h4>
       
-      <!-- วัตถุดิบ 1 -->
+      <!-- วัตถุดิบ 1 (ตายตัว) -->
       <div class="sub-box">
         <b>วัตถุดิบ 1 (Sugar Base)</b>
         <div class="form-grid" style="margin-top:6px;">
-          <div>
-            <label>รหัสวัตถุดิบ 1</label>
-            <input id="rm1-code" value="RM-SUG-01">
-          </div>
+          <div><label>รหัสวัตถุดิบ 1</label><input id="rm1-code" value="RM-SUG-01"></div>
           <div>
             <label>ชื่อวัตถุดิบ 1</label>
             <select id="rm1-name">
@@ -272,22 +298,10 @@ function renderQCAnalysis(){
               <option value="Refined Sugar (Bonsucro)">Refined Sugar (Bonsucro)</option>
             </select>
           </div>
-          <div>
-            <label>อัตราส่วน (%)</label>
-            <input id="rm1-ratio" type="number" step="0.1" value="97.0">
-          </div>
-          <div>
-            <label>วันที่รับเข้า (Received Date)</label>
-            <input id="rm1-recv" type="date" value="${todayStr}">
-          </div>
-          <div>
-            <label>วันที่ผลิต (MFG Date)</label>
-            <input id="rm1-mfg" type="date">
-          </div>
-          <div>
-            <label>วันที่หมดอายุ (EXP Date)</label>
-            <input id="rm1-exp" type="date">
-          </div>
+          <div><label>อัตราส่วน (%)</label><input id="rm1-ratio" type="number" step="0.1" value="97.0"></div>
+          <div><label>วันที่รับเข้า (dd/mm/yyyy)</label><input id="rm1-recv" placeholder="dd/mm/yyyy" value="${todayStr}"></div>
+          <div><label>วันที่ผลิต (dd/mm/yyyy)</label><input id="rm1-mfg" placeholder="dd/mm/yyyy"></div>
+          <div><label>วันที่หมดอายุ (dd/mm/yyyy)</label><input id="rm1-exp" placeholder="dd/mm/yyyy"></div>
         </div>
         <div class="form-grid">
           <div><label>Polarization (°Z)</label><input id="qc-raw-polar" type="number" step="0.01" value="99.80"></div>
@@ -297,101 +311,62 @@ function renderQCAnalysis(){
         </div>
       </div>
 
-      <!-- วัตถุดิบ 2 -->
-      <div class="sub-box">
-        <b>วัตถุดิบ 2 (Additive / Starch)</b>
-        <div class="form-grid" style="margin-top:6px;">
-          <div>
-            <label>รหัสวัตถุดิบ 2</label>
-            <input id="rm2-code" value="RM-ST-02">
-          </div>
-          <div>
-            <label>ชื่อวัตถุดิบ 2</label>
-            <select id="rm2-name">
-              <option value="Tapioca Starch">Tapioca Starch</option>
-              <option value="Corn Starch">Corn Starch</option>
-              <option value="Silicon Dioxide">Silicon Dioxide</option>
-              <option value="Premixed 1">Premixed 1</option>
-            </select>
-          </div>
-          <div>
-            <label>อัตราส่วน (%)</label>
-            <input id="rm2-ratio" type="number" step="0.1" value="3.0">
-          </div>
-          <div>
-            <label>วันที่รับเข้า (Received Date)</label>
-            <input id="rm2-recv" type="date" value="${todayStr}">
-          </div>
-          <div>
-            <label>วันที่ผลิต (MFG Date)</label>
-            <input id="rm2-mfg" type="date">
-          </div>
-          <div>
-            <label>วันที่หมดอายุ (EXP Date)</label>
-            <input id="rm2-exp" type="date">
-          </div>
-        </div>
-      </div>
-
-      <!-- วัตถุดิบ 3 (เพิ่มเอง) -->
-      <div style="margin-bottom:8px;">
-        <label style="cursor:pointer;font-weight:600;color:var(--teal)">
-          <input type="checkbox" id="toggle-rm3" onchange="toggleRM3(this.checked)"> + เพิ่มวัตถุดิบ 3 (ถ้ามี)
-        </label>
-      </div>
-      <div class="sub-box" id="box-rm3" style="display:none;">
-        <b>วัตถุดิบ 3 (เพิ่มเอง / อื่นๆ)</b>
-        <div class="form-grid" style="margin-top:6px;">
-          <div><label>รหัสวัตถุดิบ 3</label><input id="rm3-code" placeholder="เช่น RM-EXT-03"></div>
-          <div><label>ชื่อวัตถุดิบ 3</label><input id="rm3-name" placeholder="เช่น Anti-caking agent"></div>
-          <div><label>อัตราส่วน (%)</label><input id="rm3-ratio" type="number" step="0.01" value="0.0"></div>
-          <div><label>วันที่รับเข้า</label><input id="rm3-recv" type="date"></div>
-          <div><label>วันที่ผลิต</label><input id="rm3-mfg" type="date"></div>
-          <div><label>วันที่หมดอายุ</label><input id="rm3-exp" type="date"></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- 2. ข้อมูลบรรจุภัณฑ์ (FM-QA-19) -->
-    <div class="card">
-      <h3 style="color:var(--teal)">2. ข้อมูลบรรจุภัณฑ์และเกณฑ์น้ำหนัก (FM-QA-19 Rev.02)</h3>
-      <div class="form-grid">
-        <div><label>ชนิดบรรจุภัณฑ์ชั้นใน</label><input id="pkg-inner" value="HDPE Bag / LDPE liner"></div>
-        <div><label>ชนิดบรรจุภัณฑ์ชั้นนอก</label><input id="pkg-outer" value="PP Woven bag (ถุงกระสอบเย็บด้าย)"></div>
-        <div><label>สีด้ายเย็บ (Thread Color)</label><input id="pkg-thread-color" value="สีขาว / สีชมพู"></div>
-        <div><label>ขนาดบรรจุสุทธิต่อถุง (Net Wt. Kg)</label><input id="pkg-net-spec" type="number" step="0.01" value="25.00"></div>
-        <div><label>เกณฑ์น้ำหนักรวมถุงชั้นใน (Gross Wt. Spec)</label><input id="pkg-gross-spec" value="25.08 Kg (25.00 - 25.15 Kg)"></div>
-        <div><label>หมายเลขเครื่องชั่ง</label><input id="pkg-scale-id" value="SCL-QA-01"></div>
+      <!-- กล่องรายการวัตถุดิบ 2, 3, ... (เพิ่ม/ลด ได้อิสระ) -->
+      <div id="extra-ingredients-list"></div>
+      <div style="margin-top:8px;">
+        <button type="button" class="btn small primary" onclick="addExtraIngredient()">+ เพิ่มวัตถุดิบรอง (วัตถุดิบ 2, 3, ...)</button>
       </div>
     </div>
 
-    <!-- 3. ตาราง Batch บันทึกผลแล็บ FM-QA-24 และการตรวจบรรจุภัณฑ์ FM-QA-19 -->
+    <!-- 2. รายงานวิเคราะห์คุณภาพ & การตรวจการบรรจุทุก Batch (FM-QA-24 & FM-QA-19) [ย้ายมาอันดับ 2] -->
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
-        <h3 style="color:var(--teal);margin:0">3. รายการวิเคราะห์คุณภาพ &amp; การบรรจุทุก Batch (FM-QA-24 &amp; FM-QA-19)</h3>
-        <button type="button" class="btn small primary" id="btn-add-batch">+ เพิ่ม Batch</button>
+        <h3 style="color:var(--teal);margin:0">2. รายงานการวิเคราะห์คุณภาพ &amp; ตรวจการบรรจุทุก Batch (FM-QA-24 &amp; FM-QA-19)</h3>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button type="button" class="btn small" style="background:#E2F0D9;color:#276A3C;font-weight:700;" onclick="bulkPassBatchCheck()">✓ ติ๊กผ่านทั้งหมด (สภาพถุง/ฉลาก/สีด้าย)</button>
+          <button type="button" class="btn small primary" id="btn-add-batch">+ เพิ่ม Batch</button>
+        </div>
       </div>
 
       <div style="overflow-x:auto;">
         <table>
           <thead>
             <tr>
-              <th rowspan="2" style="width:60px">Batch</th>
+              <th rowspan="2" style="width:55px">Batch</th>
+              <th colspan="5">FM-QA-19: น้ำหนักผลิตภัณฑ์รวมถุงชั้นใน #1 - #5 (Kg)</th>
               <th rowspan="2" style="width:70px">จำนวน<br>(ถุง)</th>
               <th rowspan="2" style="width:65px">เวลา</th>
               <th colspan="3">FM-QA-24: คุณภาพ &amp; Particle Size</th>
-              <th colspan="4">FM-QA-19: การสุ่มชั่งน้ำหนักรวมถุงชั้นใน &amp; สภาพบรรจุภัณฑ์</th>
+              <th colspan="3">การตรวจสอบบรรจุภัณฑ์ (FM-QA-19)</th>
               <th rowspan="2" style="width:50px">จัดการ</th>
             </tr>
             <tr>
+              <th style="width:55px">#1</th>
+              <th style="width:55px">#2</th>
+              <th style="width:55px">#3</th>
+              <th style="width:55px">#4</th>
+              <th style="width:55px">#5</th>
               <th style="width:75px">Moisture<br>(%)</th>
-              <th style="width:85px">ผ่าน 180µ<br>(%)</th>
-              <th style="width:85px">ค้าง 180µ<br>(%)</th>
-              <th style="width:140px">สุ่มชั่ง #1-#3 (Kg)</th>
-              <th style="width:100px">สุ่มชั่ง #4-#5 (Kg)</th>
-              <th style="width:75px">สภาพถุง</th>
-              <th style="width:75px">ฉลาก/ด้าย</th>
+              <th style="width:80px">ผ่าน 180µ<br>(%)</th>
+              <th style="width:80px">ค้าง 180µ<br>(%)</th>
+              <th style="width:75px">
+                สภาพถุง<br>
+                <select style="font-size:12px;padding:1px;" onchange="bulkUpdateBatchField('packCheck', this.value)">
+                  <option value="">ทั้งหมด</option><option value="ผ่าน">ผ่าน</option><option value="ไม่ผ่าน">ไม่ผ่าน</option>
+                </select>
+              </th>
+              <th style="width:75px">
+                ฉลาก<br>
+                <select style="font-size:12px;padding:1px;" onchange="bulkUpdateBatchField('labelCheck', this.value)">
+                  <option value="">ทั้งหมด</option><option value="ผ่าน">ผ่าน</option><option value="ไม่ผ่าน">ไม่ผ่าน</option>
+                </select>
+              </th>
+              <th style="width:75px">
+                สีด้าย<br>
+                <select style="font-size:12px;padding:1px;" onchange="bulkUpdateBatchField('threadCheck', this.value)">
+                  <option value="">ทั้งหมด</option><option value="ผ่าน">ผ่าน</option><option value="ไม่ผ่าน">ไม่ผ่าน</option>
+                </select>
+              </th>
             </tr>
           </thead>
           <tbody id="batch-rows"></tbody>
@@ -404,6 +379,19 @@ function renderQCAnalysis(){
         <div><b>ผ่าน 180µ เฉลี่ย:</b> <span id="avg-through">0.00</span> %</div>
         <div><b>ค้าง 180µ เฉลี่ย:</b> <span id="avg-ret">0.00</span> %</div>
         <div><b>นน. รวมถุงชั้นในเฉลี่ย:</b> <span id="avg-gross">0.00</span> Kg</div>
+      </div>
+    </div>
+
+    <!-- 3. ข้อมูลบรรจุภัณฑ์ (FM-QA-19) [ย้ายมาอันดับ 3] -->
+    <div class="card">
+      <h3 style="color:var(--teal)">3. ข้อมูลบรรจุภัณฑ์และเกณฑ์น้ำหนัก (FM-QA-19 Rev.02)</h3>
+      <div class="form-grid">
+        <div><label>ชนิดบรรจุภัณฑ์ชั้นใน</label><input id="pkg-inner" value="HDPE Bag / LDPE liner"></div>
+        <div><label>ชนิดบรรจุภัณฑ์ชั้นนอก</label><input id="pkg-outer" value="PP Woven bag (ถุงกระสอบเย็บด้าย)"></div>
+        <div><label>สีด้ายเย็บ (Thread Color)</label><input id="pkg-thread-color" value="สีขาว / สีชมพู"></div>
+        <div><label>ขนาดบรรจุสุทธิต่อถุง (Net Wt. Kg)</label><input id="pkg-net-spec" type="number" step="0.01" value="25.00"></div>
+        <div><label>เกณฑ์น้ำหนักรวมถุงชั้นใน (Gross Wt. Spec)</label><input id="pkg-gross-spec" value="25.08 Kg (25.00 - 25.15 Kg)"></div>
+        <div><label>หมายเลขเครื่องชั่ง</label><input id="pkg-scale-id" value="SCL-QA-01"></div>
       </div>
     </div>
 
@@ -436,7 +424,9 @@ function renderQCAnalysis(){
     </div>
   `;
 
-  // ผูก Event การ Sync รหัสสินค้าและชื่อสินค้า
+  // Render วัตถุดิบรอง
+  renderExtraIngredients();
+
   const codeSelect = document.getElementById('qc-prod-code');
   const nameSelect = document.getElementById('qc-prod');
   const mfgInput = document.getElementById('qc-mfg');
@@ -470,7 +460,7 @@ function renderQCAnalysis(){
     calculateExpDate();
   });
 
-  mfgInput.addEventListener('change', calculateExpDate);
+  mfgInput.addEventListener('input', calculateExpDate);
 
   calculateExpDate();
   renderBatchTable();
@@ -497,9 +487,97 @@ function renderQCAnalysis(){
   renderQCTable();
 }
 
-function toggleRM3(show){
-  const box = document.getElementById('box-rm3');
-  if(box) box.style.display = show ? 'block' : 'none';
+// ฟังก์ชันแสดงรายการวัตถุดิบ 2, 3, ...
+function renderExtraIngredients(){
+  const container = document.getElementById('extra-ingredients-list');
+  if(!container) return;
+
+  container.innerHTML = extraIngredients.map(function(item, idx){
+    return `
+      <div class="sub-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <b>วัตถุดิบ ${idx + 2}</b>
+          <button type="button" class="btn small danger" onclick="removeExtraIngredient(${idx})">ลบวัตถุดิบนี้</button>
+        </div>
+        <div class="form-grid">
+          <div>
+            <label>รหัสวัตถุดิบ</label>
+            <input type="text" value="${item.code}" onchange="updateExtraIng(${idx}, 'code', this.value)" placeholder="เช่น RM-ST-02">
+          </div>
+          <div>
+            <label>ชื่อวัตถุดิบ</label>
+            <input type="text" value="${item.name}" list="ing-name-options" onchange="updateExtraIng(${idx}, 'name', this.value)" placeholder="พิมพ์หรือเลือก">
+            <datalist id="ing-name-options">
+              <option value="Tapioca Starch">
+              <option value="Corn Starch">
+              <option value="Silicon Dioxide">
+              <option value="Premixed 1">
+              <option value="Anti-caking agent">
+            </datalist>
+          </div>
+          <div>
+            <label>อัตราส่วน (%)</label>
+            <input type="number" step="0.01" value="${item.ratio}" onchange="updateExtraIng(${idx}, 'ratio', parseFloat(this.value)||0)">
+          </div>
+          <div>
+            <label>วันที่รับเข้า (dd/mm/yyyy)</label>
+            <input type="text" value="${item.recv}" placeholder="dd/mm/yyyy" onchange="updateExtraIng(${idx}, 'recv', this.value)">
+          </div>
+          <div>
+            <label>วันที่ผลิต (dd/mm/yyyy)</label>
+            <input type="text" value="${item.mfg}" placeholder="dd/mm/yyyy" onchange="updateExtraIng(${idx}, 'mfg', this.value)">
+          </div>
+          <div>
+            <label>วันที่หมดอายุ (dd/mm/yyyy)</label>
+            <input type="text" value="${item.exp}" placeholder="dd/mm/yyyy" onchange="updateExtraIng(${idx}, 'exp', this.value)">
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function addExtraIngredient(){
+  const nextNo = extraIngredients.length + 2;
+  extraIngredients.push({
+    id: nextNo,
+    code: `RM-ING-0${nextNo}`,
+    name: 'Corn Starch',
+    ratio: 0.0,
+    recv: getTodayDMY(),
+    mfg: '',
+    exp: ''
+  });
+  renderExtraIngredients();
+}
+
+function removeExtraIngredient(idx){
+  extraIngredients.splice(idx, 1);
+  renderExtraIngredients();
+}
+
+function updateExtraIng(idx, field, val){
+  if(extraIngredients[idx]){
+    extraIngredients[idx][field] = val;
+  }
+}
+
+// ติ๊กผ่านทั้งหมดในคลิกเดียว (สภาพถุง, ฉลาก, สีด้าย)
+function bulkPassBatchCheck(){
+  currentBatches.forEach(function(b){
+    b.packCheck = 'ผ่าน';
+    b.labelCheck = 'ผ่าน';
+    b.threadCheck = 'ผ่าน';
+  });
+  renderBatchTable();
+}
+
+function bulkUpdateBatchField(field, val){
+  if(!val) return;
+  currentBatches.forEach(function(b){
+    b[field] = val;
+  });
+  renderBatchTable();
 }
 
 function renderBatchTable(){
@@ -510,24 +588,16 @@ function renderBatchTable(){
     return `
       <tr>
         <td><input type="text" value="${b.batchNo}" onchange="updateBatchField(${idx}, 'batchNo', this.value)"></td>
+        <td><input type="number" step="0.01" value="${b.w1}" placeholder="#1" onchange="updateBatchField(${idx}, 'w1', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.01" value="${b.w2}" placeholder="#2" onchange="updateBatchField(${idx}, 'w2', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.01" value="${b.w3}" placeholder="#3" onchange="updateBatchField(${idx}, 'w3', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.01" value="${b.w4}" placeholder="#4" onchange="updateBatchField(${idx}, 'w4', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.01" value="${b.w5}" placeholder="#5" onchange="updateBatchField(${idx}, 'w5', parseFloat(this.value)||0)"></td>
         <td><input type="number" value="${b.amount}" onchange="updateBatchField(${idx}, 'amount', parseFloat(this.value)||0)"></td>
         <td><input type="text" value="${b.time}" onchange="updateBatchField(${idx}, 'time', this.value)"></td>
         <td><input type="number" step="0.01" value="${b.moisture}" onchange="updateBatchField(${idx}, 'moisture', parseFloat(this.value)||0)"></td>
         <td><input type="number" step="0.1" value="${b.partThrough}" onchange="updateBatchField(${idx}, 'partThrough', parseFloat(this.value)||0)"></td>
         <td><input type="number" step="0.1" value="${b.partRet}" onchange="updateBatchField(${idx}, 'partRet', parseFloat(this.value)||0)"></td>
-        <td>
-          <div style="display:flex;gap:2px;">
-            <input type="number" step="0.01" value="${b.w1}" placeholder="#1" onchange="updateBatchField(${idx}, 'w1', parseFloat(this.value)||0)">
-            <input type="number" step="0.01" value="${b.w2}" placeholder="#2" onchange="updateBatchField(${idx}, 'w2', parseFloat(this.value)||0)">
-            <input type="number" step="0.01" value="${b.w3}" placeholder="#3" onchange="updateBatchField(${idx}, 'w3', parseFloat(this.value)||0)">
-          </div>
-        </td>
-        <td>
-          <div style="display:flex;gap:2px;">
-            <input type="number" step="0.01" value="${b.w4}" placeholder="#4" onchange="updateBatchField(${idx}, 'w4', parseFloat(this.value)||0)">
-            <input type="number" step="0.01" value="${b.w5}" placeholder="#5" onchange="updateBatchField(${idx}, 'w5', parseFloat(this.value)||0)">
-          </div>
-        </td>
         <td>
           <select onchange="updateBatchField(${idx}, 'packCheck', this.value)">
             <option value="ผ่าน" ${b.packCheck==='ผ่าน'?'selected':''}>ผ่าน</option>
@@ -538,6 +608,12 @@ function renderBatchTable(){
           <select onchange="updateBatchField(${idx}, 'labelCheck', this.value)">
             <option value="ผ่าน" ${b.labelCheck==='ผ่าน'?'selected':''}>ผ่าน</option>
             <option value="ไม่ผ่าน" ${b.labelCheck==='ไม่ผ่าน'?'selected':''}>ไม่ผ่าน</option>
+          </select>
+        </td>
+        <td>
+          <select onchange="updateBatchField(${idx}, 'threadCheck', this.value)">
+            <option value="ผ่าน" ${b.threadCheck==='ผ่าน'?'selected':''}>ผ่าน</option>
+            <option value="ไม่ผ่าน" ${b.threadCheck==='ไม่ผ่าน'?'selected':''}>ไม่ผ่าน</option>
           </select>
         </td>
         <td>
@@ -613,7 +689,6 @@ function saveRecord(){
     return;
   }
 
-  // คำนวณชื่อลูกค้า
   const custSelect = document.getElementById('qc-cust-select').value;
   let finalCust = custSelect;
   if(custSelect === '__OTHER__'){
@@ -631,7 +706,7 @@ function saveRecord(){
     cust: finalCust,
     mfg: document.getElementById('qc-mfg').value,
     exp: document.getElementById('qc-exp').value,
-    deliv: document.getElementById('qc-deliv').value, // หากเว้นว่างไว้จะเป็นค่าว่าง
+    deliv: document.getElementById('qc-deliv').value, // ว่างได้
     rawPolar: document.getElementById('qc-raw-polar').value,
     rawColor: document.getElementById('qc-raw-color').value,
     rawInvert: document.getElementById('qc-raw-invert').value,
@@ -645,22 +720,7 @@ function saveRecord(){
         mfg: document.getElementById('rm1-mfg').value,
         exp: document.getElementById('rm1-exp').value
       },
-      rm2: {
-        code: document.getElementById('rm2-code').value,
-        name: document.getElementById('rm2-name').value,
-        ratio: document.getElementById('rm2-ratio').value,
-        recv: document.getElementById('rm2-recv').value,
-        mfg: document.getElementById('rm2-mfg').value,
-        exp: document.getElementById('rm2-exp').value
-      },
-      rm3: document.getElementById('toggle-rm3').checked ? {
-        code: document.getElementById('rm3-code').value,
-        name: document.getElementById('rm3-name').value,
-        ratio: document.getElementById('rm3-ratio').value,
-        recv: document.getElementById('rm3-recv').value,
-        mfg: document.getElementById('rm3-mfg').value,
-        exp: document.getElementById('rm3-exp').value
-      } : null
+      extras: JSON.parse(JSON.stringify(extraIngredients))
     },
     pkg: {
       inner: document.getElementById('pkg-inner').value,
@@ -677,7 +737,7 @@ function saveRecord(){
     appr: document.getElementById('qa-appr').value,
     batches: JSON.parse(JSON.stringify(currentBatches)),
     summary: summary,
-    date: new Date().toISOString().slice(0,10)
+    date: getTodayDMY()
   };
 
   const list = getQCData();
@@ -735,7 +795,7 @@ function renderList(){
                 <td>${item.batches ? item.batches.length : 1} Batch</td>
                 <td>${item.summary.totalMT} MT</td>
                 <td>
-                  <button type="button" class="btn small primary" onclick="printCOA(${idx})">🖨️️ พิมพ์ COA</button>
+                  <button type="button" class="btn small primary" onclick="printCOA(${idx})">🖨️ พิมพ์ COA</button>
                   <button type="button" class="btn small ghost" onclick="printPackagingReport(${idx})">📦 พิมพ์ใบตรวจบรรจุ</button>
                 </td>
               </tr>
@@ -747,7 +807,7 @@ function renderList(){
   `;
 }
 
-// 5. สั่งพิมพ์ Certificate Of Analysis (FM-QA-25 Rev.01)
+// 5. พิมพ์ COA (FM-QA-25 Rev.01) รูปแบบวันที่ dd/mm/yyyy
 function printCOA(index){
   const item = getQCData()[index];
   if(!item) return;
@@ -842,7 +902,7 @@ function printCOA(index){
         </tbody>
       </table>
 
-      <!-- หัวข้อการตรวจสอบบรรจุภัณฑ์ -->
+      <!-- ข้อมูลบรรจุภัณฑ์ -->
       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:14px;border:1px solid #000;">
         <thead>
           <tr style="background:#f2f2f2;">
@@ -889,7 +949,7 @@ function printCOA(index){
   window.print();
 }
 
-// 6. สั่งพิมพ์รายงานการตรวจสอบการบรรจุผลิตภัณฑ์ (FM-QA-19 Rev.02)
+// 6. พิมพ์ FM-QA-19 Rev.02 รูปแบบวันที่ dd/mm/yyyy
 function printPackagingReport(index){
   const item = getQCData()[index];
   if(!item) return;
@@ -968,7 +1028,7 @@ function printPackagingReport(index){
                 <td style="border:1px solid #000;padding:3px;text-align:center;">${b.amount}</td>
                 <td style="border:1px solid #000;padding:3px;text-align:center;">${b.packCheck==='ผ่าน'?'✓':'X'}</td>
                 <td style="border:1px solid #000;padding:3px;text-align:center;">${b.labelCheck==='ผ่าน'?'✓':'X'}</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">${p.thread||'-'}</td>
+                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.threadCheck==='ผ่าน'?'✓':'X'}</td>
                 <td style="border:1px solid #000;padding:3px;text-align:center;">✓</td>
                 <td style="border:1px solid #000;padding:3px;text-align:center;">-</td>
                 <td style="border:1px solid #000;padding:3px;text-align:center;">${p.scale||'-'}</td>
@@ -987,7 +1047,7 @@ function printPackagingReport(index){
         4. ระบุเครื่องหมาย ✓ หมายถึง ถูกต้อง ยอมรับ หรือเครื่องหมาย X หมายถึง ไม่ถูกต้อง ไม่ยอมรับ
       </div>
 
-      <!-- ลายเซ็นต์ -->
+      <!-- ส่วนลงนาม -->
       <div style="display:flex;justify-content:space-between;font-size:15px;text-align:center;margin-top:16px;">
         <div style="width:45%;">
           ผู้ตรวจสอบ............................................................<br>
