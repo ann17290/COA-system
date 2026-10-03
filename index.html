@@ -109,7 +109,6 @@ td input, td select{font-family:inherit;font-size:14px;padding:4px 5px;border-ra
 let activeTab = 'dash';
 let activeSettingSubTab = 'cust';
 
-// ข้อมูลตั้งต้นสำหรับ Master Data
 const DEFAULT_MASTER = {
   customers: [
     { code: 'CUST-01', name: 'บริษัท ซีพีเอฟ (ประเทศไทย) จำกัด (มหาชน)', shelfLifeYears: 1 },
@@ -297,7 +296,7 @@ function renderQCAnalysis(){
 
   document.getElementById('tab-qc-analysis').innerHTML = `
     <h1 class="page">🔬 บันทึกการวิเคราะห์คุณภาพ &amp; ตรวจการบรรจุ (FM-QA-24 / FM-QA-19)</h1>
-    <p class="sub">บันทึกผลวิเคราะห์ Particle size, ความชื้น, คุณภาพแล็บ และการตรวจสอบบรรจุภัณฑ์ทุก Batch เพื่อออก COA (FM-QA-25)</p>
+    <p class="sub">บันทึกผลวิเคราะห์ทางห้องปฏิบัติการ และตรวจสอบบรรจุภัณฑ์ราย Batch เพื่อออกเอกสาร COA (FM-QA-25)</p>
 
     <!-- 1. ข้อมูลทั่วไปและการสั่งผลิต -->
     <div class="card">
@@ -335,10 +334,7 @@ function renderQCAnalysis(){
         </div>
       </div>
 
-      <!-- อัตราส่วนผสมผลิตภัณฑ์และวัตถุดิบ -->
       <h4 style="margin:14px 0 8px;color:var(--teal)">🧪 อัตราส่วนผสมผลิตภัณฑ์ (Recipe &amp; Raw Materials)</h4>
-      
-      <!-- วัตถุดิบ 1 (Main Base) -->
       <div class="sub-box">
         <b>วัตถุดิบ 1 (Sugar Base)</b>
         <div class="form-grid" style="margin-top:6px;">
@@ -362,20 +358,71 @@ function renderQCAnalysis(){
         </div>
       </div>
 
-      <!-- วัตถุดิบรอง 2, 3, ... -->
       <div id="extra-ingredients-list"></div>
       <div style="margin-top:8px;">
         <button type="button" class="btn small primary" onclick="addExtraIngredient()">+ เพิ่มวัตถุดิบรอง (วัตถุดิบ 2, 3, ...)</button>
       </div>
     </div>
 
-    <!-- 2. รายงานวิเคราะห์คุณภาพ & การตรวจการบรรจุทุก Batch (FM-QA-24 & FM-QA-19) -->
+    <!-- 2. รายงานการวิเคราะห์คุณภาพผลิตภัณฑ์ตาม Batch (FM-QA-24) -->
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
-        <h3 style="color:var(--teal);margin:0">2. รายงานการวิเคราะห์คุณภาพ &amp; ตรวจการบรรจุทุก Batch (FM-QA-24 &amp; FM-QA-19)</h3>
+        <h3 style="color:var(--teal);margin:0">2. รายงานการวิเคราะห์คุณภาพผลิตภัณฑ์ตาม Batch (FM-QA-24)</h3>
+        <div>
+          <button type="button" class="btn small primary" onclick="addNewBatchRow()">+ เพิ่ม Batch</button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:70px">Batch</th>
+              <th style="width:90px">เวลาเก็บตัวอย่าง</th>
+              <th style="width:120px">Moisture (%)</th>
+              <th style="width:140px">ผ่าน ตะแกรง 180µ (%)</th>
+              <th style="width:140px">ค้าง ตะแกรง 180µ (%)</th>
+              <th style="width:110px">ผลการร่อนตะแกรง</th>
+              <th style="width:60px">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="qc-batch-rows"></tbody>
+        </table>
+      </div>
+
+      <div class="summary-bar">
+        <div><b>Moisture เฉลี่ย:</b> <span id="avg-moisture">0.00</span> %</div>
+        <div><b>ผ่าน 180µ เฉลี่ย:</b> <span id="avg-through">0.00</span> %</div>
+        <div><b>ค้าง 180µ เฉลี่ย:</b> <span id="avg-ret">0.00</span> %</div>
+      </div>
+    </div>
+
+    <!-- 3. ข้อมูลบรรจุภัณฑ์ & ตรวจการบรรจุทุก Batch (FM-QA-19) -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <h3 style="color:var(--teal);margin:0;">3. ข้อมูลบรรจุภัณฑ์ &amp; ตรวจการบรรจุทุก Batch (FM-QA-19 Rev.02)</h3>
+        <div style="font-size:14px;">
+          โหลดเทมเพลต: 
+          <select id="pkg-template-select" style="width:auto;display:inline-block;padding:3px 8px;" onchange="applyPkgTemplate(this.value)">
+            ${pkgOptions}
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-grid">
+        <div><label>ชนิดบรรจุภัณฑ์ชั้นใน</label><input id="pkg-inner" value="${master.packagings[0]?.inner || ''}"></div>
+        <div><label>ชนิดบรรจุภัณฑ์ชั้นนอก</label><input id="pkg-outer" value="${master.packagings[0]?.outer || ''}"></div>
+        <div><label>สีด้ายเย็บ (Thread Color)</label><input id="pkg-thread-color" value="${master.packagings[0]?.thread || ''}"></div>
+        <div><label>ขนาดบรรจุสุทธิต่อถุง (Net Wt. Kg)</label><input id="pkg-net-spec" type="number" step="0.01" value="${master.packagings[0]?.netSpec || 25.00}" onchange="calcBatchSummary()"></div>
+        <div><label>เกณฑ์น้ำหนักรวมถุงชั้นใน (Gross Wt. Spec)</label><input id="pkg-gross-spec" value="${master.packagings[0]?.grossSpec || ''}"></div>
+        <div><label>หมายเลขเครื่องชั่ง</label><input id="pkg-scale-id" value="SCL-QA-01"></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px;flex-wrap:wrap;gap:8px;">
+        <b style="color:var(--teal);font-size:15px;">📦 รายการตรวจบรรจุภัณฑ์และสุ่มชั่งน้ำหนักราย Batch</b>
         <div style="display:flex;gap:6px;align-items:center;">
           <button type="button" class="btn small" style="background:#E2F0D9;color:#276A3C;font-weight:700;" onclick="bulkPassBatchCheck()">✓ ติ๊กผ่านทั้งหมด (สภาพถุง/ฉลาก/สีด้าย)</button>
-          <button type="button" class="btn small primary" id="btn-add-batch">+ เพิ่ม Batch</button>
+          <button type="button" class="btn small primary" onclick="addNewBatchRow()">+ เพิ่ม Batch</button>
         </div>
       </div>
 
@@ -384,35 +431,30 @@ function renderQCAnalysis(){
           <thead>
             <tr>
               <th rowspan="2" style="width:55px">Batch</th>
-              <th colspan="5">FM-QA-19: น้ำหนักผลิตภัณฑ์รวมถุงชั้นใน #1 - #5 (Kg)</th>
-              <th rowspan="2" style="width:70px">จำนวน<br>(ถุง)</th>
-              <th rowspan="2" style="width:65px">เวลา</th>
-              <th colspan="3">FM-QA-24: คุณภาพ &amp; Particle Size</th>
+              <th rowspan="2" style="width:80px">จำนวน<br>(ถุง)</th>
+              <th colspan="5">น้ำหนักรวมบรรจุภัณฑ์ชั้นใน สุ่ม #1 - #5 (Kg)</th>
               <th colspan="3">การตรวจสอบบรรจุภัณฑ์ (FM-QA-19)</th>
               <th rowspan="2" style="width:50px">จัดการ</th>
             </tr>
             <tr>
-              <th style="width:55px">#1</th>
-              <th style="width:55px">#2</th>
-              <th style="width:55px">#3</th>
-              <th style="width:55px">#4</th>
-              <th style="width:55px">#5</th>
-              <th style="width:75px">Moisture<br>(%)</th>
-              <th style="width:80px">ผ่าน 180µ<br>(%)</th>
-              <th style="width:80px">ค้าง 180µ<br>(%)</th>
-              <th style="width:75px">
+              <th style="width:60px">#1</th>
+              <th style="width:60px">#2</th>
+              <th style="width:60px">#3</th>
+              <th style="width:60px">#4</th>
+              <th style="width:60px">#5</th>
+              <th style="width:80px">
                 สภาพถุง<br>
                 <select style="font-size:12px;padding:1px;" onchange="bulkUpdateBatchField('packCheck', this.value)">
                   <option value="">ทั้งหมด</option><option value="ผ่าน">ผ่าน</option><option value="ไม่ผ่าน">ไม่ผ่าน</option>
                 </select>
               </th>
-              <th style="width:75px">
+              <th style="width:80px">
                 ฉลาก<br>
                 <select style="font-size:12px;padding:1px;" onchange="bulkUpdateBatchField('labelCheck', this.value)">
                   <option value="">ทั้งหมด</option><option value="ผ่าน">ผ่าน</option><option value="ไม่ผ่าน">ไม่ผ่าน</option>
                 </select>
               </th>
-              <th style="width:75px">
+              <th style="width:80px">
                 สีด้าย<br>
                 <select style="font-size:12px;padding:1px;" onchange="bulkUpdateBatchField('threadCheck', this.value)">
                   <option value="">ทั้งหมด</option><option value="ผ่าน">ผ่าน</option><option value="ไม่ผ่าน">ไม่ผ่าน</option>
@@ -420,37 +462,13 @@ function renderQCAnalysis(){
               </th>
             </tr>
           </thead>
-          <tbody id="batch-rows"></tbody>
+          <tbody id="pkg-batch-rows"></tbody>
         </table>
       </div>
 
       <div class="summary-bar" id="batch-summary">
         <div><b>รวมผลิตได้:</b> <span id="sum-bags">0</span> ถุง (<span id="sum-mt">0.000</span> MT)</div>
-        <div><b>Moisture เฉลี่ย:</b> <span id="avg-moisture">0.00</span> %</div>
-        <div><b>ผ่าน 180µ เฉลี่ย:</b> <span id="avg-through">0.00</span> %</div>
-        <div><b>ค้าง 180µ เฉลี่ย:</b> <span id="avg-ret">0.00</span> %</div>
         <div><b>นน. รวมถุงชั้นในเฉลี่ย:</b> <span id="avg-gross">0.00</span> Kg</div>
-      </div>
-    </div>
-
-    <!-- 3. ข้อมูลบรรจุภัณฑ์ (FM-QA-19) -->
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <h3 style="color:var(--teal);margin:0;">3. ข้อมูลบรรจุภัณฑ์และเกณฑ์น้ำหนัก (FM-QA-19 Rev.02)</h3>
-        <div style="font-size:14px;">
-          โหลดเทมเพลต: 
-          <select id="pkg-template-select" style="width:auto;display:inline-block;padding:3px 8px;" onchange="applyPkgTemplate(this.value)">
-            ${pkgOptions}
-          </select>
-        </div>
-      </div>
-      <div class="form-grid">
-        <div><label>ชนิดบรรจุภัณฑ์ชั้นใน</label><input id="pkg-inner" value="${master.packagings[0]?.inner || ''}"></div>
-        <div><label>ชนิดบรรจุภัณฑ์ชั้นนอก</label><input id="pkg-outer" value="${master.packagings[0]?.outer || ''}"></div>
-        <div><label>สีด้ายเย็บ (Thread Color)</label><input id="pkg-thread-color" value="${master.packagings[0]?.thread || ''}"></div>
-        <div><label>ขนาดบรรจุสุทธิต่อถุง (Net Wt. Kg)</label><input id="pkg-net-spec" type="number" step="0.01" value="${master.packagings[0]?.netSpec || 25.00}"></div>
-        <div><label>เกณฑ์น้ำหนักรวมถุงชั้นใน (Gross Wt. Spec)</label><input id="pkg-gross-spec" value="${master.packagings[0]?.grossSpec || ''}"></div>
-        <div><label>หมายเลขเครื่องชั่ง</label><input id="pkg-scale-id" value="SCL-QA-01"></div>
       </div>
     </div>
 
@@ -522,25 +540,7 @@ function renderQCAnalysis(){
   mfgInput.addEventListener('input', calculateExpDate);
 
   calculateExpDate();
-  renderBatchTable();
-
-  document.getElementById('btn-add-batch').addEventListener('click', function(){
-    const nextNo = String(currentBatches.length + 1);
-    currentBatches.push({
-      batchNo: nextNo,
-      amount: 40,
-      time: '13:30',
-      moisture: 0.04,
-      partThrough: 98.5,
-      partRet: 1.5,
-      sieveCheck: 'ผ่าน',
-      w1: 25.08, w2: 25.08, w3: 25.06, w4: 25.08, w5: 25.08,
-      packCheck: 'ผ่าน',
-      labelCheck: 'ผ่าน',
-      threadCheck: 'ผ่าน'
-    });
-    renderBatchTable();
-  });
+  renderAllBatchTables();
 
   document.getElementById('btn-save-qc').addEventListener('click', saveRecord);
   renderQCTable();
@@ -658,7 +658,7 @@ function bulkPassBatchCheck(){
     b.labelCheck = 'ผ่าน';
     b.threadCheck = 'ผ่าน';
   });
-  renderBatchTable();
+  renderPkgBatchTable();
 }
 
 function bulkUpdateBatchField(field, val){
@@ -666,69 +666,119 @@ function bulkUpdateBatchField(field, val){
   currentBatches.forEach(function(b){
     b[field] = val;
   });
-  renderBatchTable();
+  renderPkgBatchTable();
 }
 
-function renderBatchTable(){
-  const tbody = document.getElementById('batch-rows');
+function addNewBatchRow(){
+  const nextNo = String(currentBatches.length + 1);
+  currentBatches.push({
+    batchNo: nextNo,
+    amount: 40,
+    time: '13:30',
+    moisture: 0.04,
+    partThrough: 98.5,
+    partRet: 1.5,
+    sieveCheck: 'ผ่าน',
+    w1: 25.08, w2: 25.08, w3: 25.06, w4: 25.08, w5: 25.08,
+    packCheck: 'ผ่าน',
+    labelCheck: 'ผ่าน',
+    threadCheck: 'ผ่าน'
+  });
+  renderAllBatchTables();
+}
+
+function renderAllBatchTables(){
+  renderQCBatchTable();
+  renderPkgBatchTable();
+  calcBatchSummary();
+}
+
+// ตารางหัวข้อที่ 2: วิเคราะห์คุณภาพ
+function renderQCBatchTable(){
+  const tbody = document.getElementById('qc-batch-rows');
   if(!tbody) return;
 
   tbody.innerHTML = currentBatches.map(function(b, idx){
     return `
       <tr>
-        <td><input type="text" value="${b.batchNo}" onchange="updateBatchField(${idx}, 'batchNo', this.value)"></td>
-        <td><input type="number" step="0.01" value="${b.w1}" placeholder="#1" onchange="updateBatchField(${idx}, 'w1', parseFloat(this.value)||0)"></td>
-        <td><input type="number" step="0.01" value="${b.w2}" placeholder="#2" onchange="updateBatchField(${idx}, 'w2', parseFloat(this.value)||0)"></td>
-        <td><input type="number" step="0.01" value="${b.w3}" placeholder="#3" onchange="updateBatchField(${idx}, 'w3', parseFloat(this.value)||0)"></td>
-        <td><input type="number" step="0.01" value="${b.w4}" placeholder="#4" onchange="updateBatchField(${idx}, 'w4', parseFloat(this.value)||0)"></td>
-        <td><input type="number" step="0.01" value="${b.w5}" placeholder="#5" onchange="updateBatchField(${idx}, 'w5', parseFloat(this.value)||0)"></td>
-        <td><input type="number" value="${b.amount}" onchange="updateBatchField(${idx}, 'amount', parseFloat(this.value)||0)"></td>
-        <td><input type="text" value="${b.time}" onchange="updateBatchField(${idx}, 'time', this.value)"></td>
-        <td><input type="number" step="0.01" value="${b.moisture}" onchange="updateBatchField(${idx}, 'moisture', parseFloat(this.value)||0)"></td>
-        <td><input type="number" step="0.1" value="${b.partThrough}" onchange="updateBatchField(${idx}, 'partThrough', parseFloat(this.value)||0)"></td>
-        <td><input type="number" step="0.1" value="${b.partRet}" onchange="updateBatchField(${idx}, 'partRet', parseFloat(this.value)||0)"></td>
+        <td><input type="text" value="${b.batchNo}" onchange="updateBatchFieldBoth(${idx}, 'batchNo', this.value)"></td>
+        <td><input type="text" value="${b.time}" onchange="updateBatchFieldBoth(${idx}, 'time', this.value)"></td>
+        <td><input type="number" step="0.01" value="${b.moisture}" onchange="updateBatchFieldBoth(${idx}, 'moisture', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.1" value="${b.partThrough}" onchange="updateBatchFieldBoth(${idx}, 'partThrough', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.1" value="${b.partRet}" onchange="updateBatchFieldBoth(${idx}, 'partRet', parseFloat(this.value)||0)"></td>
         <td>
-          <select onchange="updateBatchField(${idx}, 'packCheck', this.value)">
+          <select onchange="updateBatchFieldBoth(${idx}, 'sieveCheck', this.value)">
+            <option value="ผ่าน" ${b.sieveCheck==='ผ่าน'?'selected':''}>ผ่าน</option>
+            <option value="ไม่ผ่าน" ${b.sieveCheck==='ไม่ผ่าน'?'selected':''}>ไม่ผ่าน</option>
+          </select>
+        </td>
+        <td>
+          <button type="button" class="btn small danger" onclick="removeBatchRow(${idx})">ลบ</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ตารางหัวข้อที่ 3: ตรวจสอบบรรจุภัณฑ์
+function renderPkgBatchTable(){
+  const tbody = document.getElementById('pkg-batch-rows');
+  if(!tbody) return;
+
+  tbody.innerHTML = currentBatches.map(function(b, idx){
+    return `
+      <tr>
+        <td><input type="text" value="${b.batchNo}" onchange="updateBatchFieldBoth(${idx}, 'batchNo', this.value)"></td>
+        <td><input type="number" value="${b.amount}" onchange="updateBatchFieldBoth(${idx}, 'amount', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.01" value="${b.w1}" placeholder="#1" onchange="updateBatchFieldBoth(${idx}, 'w1', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.01" value="${b.w2}" placeholder="#2" onchange="updateBatchFieldBoth(${idx}, 'w2', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.01" value="${b.w3}" placeholder="#3" onchange="updateBatchFieldBoth(${idx}, 'w3', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.01" value="${b.w4}" placeholder="#4" onchange="updateBatchFieldBoth(${idx}, 'w4', parseFloat(this.value)||0)"></td>
+        <td><input type="number" step="0.01" value="${b.w5}" placeholder="#5" onchange="updateBatchFieldBoth(${idx}, 'w5', parseFloat(this.value)||0)"></td>
+        <td>
+          <select onchange="updateBatchFieldBoth(${idx}, 'packCheck', this.value)">
             <option value="ผ่าน" ${b.packCheck==='ผ่าน'?'selected':''}>ผ่าน</option>
             <option value="ไม่ผ่าน" ${b.packCheck==='ไม่ผ่าน'?'selected':''}>ไม่ผ่าน</option>
           </select>
         </td>
         <td>
-          <select onchange="updateBatchField(${idx}, 'labelCheck', this.value)">
+          <select onchange="updateBatchFieldBoth(${idx}, 'labelCheck', this.value)">
             <option value="ผ่าน" ${b.labelCheck==='ผ่าน'?'selected':''}>ผ่าน</option>
             <option value="ไม่ผ่าน" ${b.labelCheck==='ไม่ผ่าน'?'selected':''}>ไม่ผ่าน</option>
           </select>
         </td>
         <td>
-          <select onchange="updateBatchField(${idx}, 'threadCheck', this.value)">
+          <select onchange="updateBatchFieldBoth(${idx}, 'threadCheck', this.value)">
             <option value="ผ่าน" ${b.threadCheck==='ผ่าน'?'selected':''}>ผ่าน</option>
             <option value="ไม่ผ่าน" ${b.threadCheck==='ไม่ผ่าน'?'selected':''}>ไม่ผ่าน</option>
           </select>
         </td>
         <td>
-          <button type="button" class="btn small danger" onclick="removeBatch(${idx})">ลบ</button>
+          <button type="button" class="btn small danger" onclick="removeBatchRow(${idx})">ลบ</button>
         </td>
       </tr>
     `;
   }).join('');
-
-  calcBatchSummary();
 }
 
-function updateBatchField(idx, field, val){
+function updateBatchFieldBoth(idx, field, val){
   if(currentBatches[idx]){
     currentBatches[idx][field] = val;
-    calcBatchSummary();
+    if(field === 'batchNo'){
+      renderAllBatchTables();
+    } else {
+      calcBatchSummary();
+    }
   }
 }
 
-function removeBatch(idx){
+function removeBatchRow(idx){
   if(currentBatches.length <= 1){
     alert('ต้องมีอย่างน้อย 1 Batch สำหรับการวิเคราะห์');
     return;
   }
   currentBatches.splice(idx, 1);
-  renderBatchTable();
+  renderAllBatchTables();
 }
 
 function calcBatchSummary(){
@@ -894,9 +944,6 @@ function renderList(){
   `;
 }
 
-// ----------------------------------------------------
-// โมดูล Master Data: เพิ่ม / แก้ไข / ลบ ครบ 5 ส่วน
-// ----------------------------------------------------
 function renderSettings(){
   document.getElementById('tab-settings').innerHTML = `
     <h1 class="page">⚙️ การตั้งค่าระบบ &amp; ฐานข้อมูลหลัก (Master Data)</h1>
@@ -1202,7 +1249,6 @@ function deleteMasterItem(key, idx){
   }
 }
 
-// ระบบ Modal แก้ไข Master Data
 function openEditModal(key, idx){
   const master = getMasterData();
   const item = master[key][idx];
@@ -1319,9 +1365,6 @@ function saveEditModal(key, idx){
   renderMasterSubTab();
 }
 
-// ----------------------------------------------------
-// พิมพ์ COA (FM-QA-25 Rev.01)
-// ----------------------------------------------------
 function printCOA(index){
   const item = getQCData()[index];
   if(!item) return;
@@ -1453,9 +1496,6 @@ function printCOA(index){
   window.print();
 }
 
-// ----------------------------------------------------
-// พิมพ์ FM-QA-19 Rev.02
-// ----------------------------------------------------
 function printPackagingReport(index){
   const item = getQCData()[index];
   if(!item) return;
