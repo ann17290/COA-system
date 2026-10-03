@@ -25,7 +25,7 @@ body{
 }
 .mono{font-family:'Angsana New', 'Sarabun', monospace;}
 .shell{display:flex;min-height:100vh;}
-nav.side{width:250px;flex:none;background:var(--teal-deep);color:#EAF3F1;padding:18px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+nav.side{width:260px;flex:none;background:var(--teal-deep);color:#EAF3F1;padding:18px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;}
 nav.side .brand{font-weight:700;font-size:18px;margin-bottom:2px;}
 nav.side .brand small{display:block;font-weight:400;font-size:13px;color:#A9C7C3;margin-top:2px;}
 nav.side ul{list-style:none;padding:0;margin:18px 0 0;display:flex;flex-direction:column;gap:3px;}
@@ -58,7 +58,16 @@ td input, td select{font-family:inherit;font-size:14px;padding:4px 5px;border-ra
 .summary-bar{background:var(--line-soft);padding:8px 14px;border-radius:8px;font-size:15px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:8px;}
 .empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:15px;}
 
-/* รูปแบบเอกสารสั่งพิมพ์ */
+/* Tabs Master data */
+.sub-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.sub-tabs button{padding:6px 12px;border-radius:6px;border:1px solid var(--line);background:var(--paper);cursor:pointer;font-family:inherit;}
+.sub-tabs button.active{background:var(--teal);color:#fff;border-color:var(--teal);font-weight:700;}
+
+/* Modal แก้ไข Master Data */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.modal-box{background:var(--paper);padding:20px;border-radius:10px;max-width:500px;width:90%;box-shadow:0 10px 25px rgba(0,0,0,0.2);}
+
+/* พิมพ์เอกสาร */
 #printArea{display:none;}
 .print-container{
   font-family:'Angsana New', 'Sarabun', 'TH Sarabun New', sans-serif !important;
@@ -81,40 +90,73 @@ td input, td select{font-family:inherit;font-size:14px;padding:4px 5px;border-ra
     <div class="brand">COA MANAGEMENT<small>PGI Foods International</small></div>
     <ul id="navlist">
       <li><button type="button" data-tab="dash" class="active">📊 แดชบอร์ด</button></li>
-      <li><button type="button" data-tab="qc-analysis">🔬 การวิเคราะห์คุณภาพ (FM-QA-24/19)</button></li>
+      <li><button type="button" data-tab="qc-analysis">🔬 บันทึกวิเคราะห์คุณภาพ</button></li>
       <li><button type="button" data-tab="list">📋 รายการ COA ทั้งหมด</button></li>
+      <li><button type="button" data-tab="settings">⚙️ การตั้งค่าระบบ (Master Data)</button></li>
     </ul>
   </nav>
   <main>
     <section id="tab-dash"></section>
     <section id="tab-qc-analysis" style="display:none"></section>
     <section id="tab-list" style="display:none"></section>
+    <section id="tab-settings" style="display:none"></section>
   </main>
 </div>
+<div id="modalArea"></div>
 <div id="printArea"></div>
 
 <script>
 let activeTab = 'dash';
+let activeSettingSubTab = 'cust';
 
-const PRODUCT_CATALOG = {
-  'IC-001': 'Icing Sugar',
-  'SM-040': 'Sugar Milled 40s',
-  'CS-030': 'Caster Sugar 30s',
-  'GS-001': 'Ground Sugar'
+// ข้อมูลตั้งต้นสำหรับ Master Data
+const DEFAULT_MASTER = {
+  customers: [
+    { code: 'CUST-01', name: 'บริษัท ซีพีเอฟ (ประเทศไทย) จำกัด (มหาชน)', shelfLifeYears: 1 },
+    { code: 'CUST-02', name: 'บริษัท เบทาโกร จำกัด (มหาชน)', shelfLifeYears: 1 },
+    { code: 'CUST-03', name: 'บริษัท ไทยเพรซิเดนท์ฟูดส์ จำกัด (มหาชน)', shelfLifeYears: 1 },
+    { code: 'CUST-SP', name: 'ลูกค้าสัญญาพิเศษ (รับประกัน 2 ปี)', shelfLifeYears: 2 }
+  ],
+  products: [
+    { code: 'IC-001', name: 'Icing Sugar', shelfMonths: 12 },
+    { code: 'SM-040', name: 'Sugar Milled 40s', shelfMonths: 12 },
+    { code: 'CS-030', name: 'Caster Sugar 30s', shelfMonths: 12 },
+    { code: 'GS-001', name: 'Ground Sugar', shelfMonths: 6 }
+  ],
+  materials: [
+    { code: 'RM-SUG-01', name: 'Refined Sugar', type: 'Main' },
+    { code: 'RM-SUG-02', name: 'White Sugar', type: 'Main' },
+    { code: 'RM-SUG-03', name: 'Refined Sugar (Bonsucro)', type: 'Main' },
+    { code: 'RM-ST-01', name: 'Tapioca Starch', type: 'Additive' },
+    { code: 'RM-ST-02', name: 'Corn Starch', type: 'Additive' },
+    { code: 'RM-AD-01', name: 'Silicon Dioxide', type: 'Additive' },
+    { code: 'RM-AD-02', name: 'Premixed 1', type: 'Additive' }
+  ],
+  packagings: [
+    { name: 'ถุงกระสอบเย็บด้าย 25 Kg', inner: 'HDPE Bag / LDPE liner', outer: 'PP Woven bag (ถุงกระสอบเย็บด้าย)', netSpec: 25.00, grossSpec: '25.08 Kg (25.00 - 25.15 Kg)', thread: 'สีขาว / สีชมพู', palletSpec: 'พาเลทละ 40 ถุง (1.00 MT)' },
+    { name: 'ถุงกระดาษ Paper Bag 25 Kg', inner: 'PE Liner', outer: 'Paper Bag', netSpec: 25.00, grossSpec: '25.30 Kg (25.20 - 25.40 Kg)', thread: 'สีน้ำตาล', palletSpec: 'พาเลทละ 40 ถุง (1.00 MT)' }
+  ],
+  staffs: [
+    { id: 'ST-01', name: 'น.ส. วิภาดา สมใจ', position: 'เจ้าหน้าที่ QA', canApprove: false },
+    { id: 'ST-02', name: 'นาย ธนกฤต มั่นคง', position: 'ผู้ช่วยหัวหน้าฝ่าย QA', canApprove: true },
+    { id: 'ST-03', name: 'นาย ปกรณ์ ศักดิ์เจริญ', position: 'หัวหน้าฝ่าย QA', canApprove: true }
+  ]
 };
 
-// วัตถุดิบรอง (2, 3, ...) เพิ่มได้อิสระ
-let extraIngredients = [
-  { id: 2, code: 'RM-ST-02', name: 'Tapioca Starch', ratio: 3.0, recv: getTodayDMY(), mfg: '', exp: '' }
-];
+function getMasterData(){
+  try{
+    const r = localStorage.getItem('pgi_master_data_v2');
+    if(r) return JSON.parse(r);
+  }catch(e){}
+  return DEFAULT_MASTER;
+}
 
-let currentBatches = [
-  { batchNo: '1', amount: 40, time: '09:00', moisture: 0.04, partThrough: 98.5, partRet: 1.5, sieveCheck: 'ผ่าน', w1: 25.08, w2: 25.08, w3: 25.06, w4: 25.08, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' },
-  { batchNo: '2', amount: 40, time: '10:30', moisture: 0.03, partThrough: 98.8, partRet: 1.2, sieveCheck: 'ผ่าน', w1: 25.06, w2: 25.08, w3: 25.08, w4: 25.06, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' },
-  { batchNo: '3', amount: 40, time: '12:00', moisture: 0.04, partThrough: 98.4, partRet: 1.6, sieveCheck: 'ผ่าน', w1: 25.08, w2: 25.06, w3: 25.08, w4: 25.08, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' }
-];
+function saveMasterData(data){
+  try{
+    localStorage.setItem('pgi_master_data_v2', JSON.stringify(data));
+  }catch(e){}
+}
 
-// แปลงรูปแบบวันที่ Date -> dd/mm/yyyy
 function formatDMY(date){
   if(!date || isNaN(date.getTime())) return '';
   const d = String(date.getDate()).padStart(2, '0');
@@ -123,7 +165,6 @@ function formatDMY(date){
   return `${d}/${m}/${y}`;
 }
 
-// แปลง dd/mm/yyyy -> Date Object
 function parseDMY(str){
   if(!str) return null;
   const parts = str.trim().split('/');
@@ -139,9 +180,19 @@ function getTodayDMY(){
   return formatDMY(new Date());
 }
 
+let extraIngredients = [
+  { id: 2, code: 'RM-ST-01', name: 'Tapioca Starch', ratio: 3.0, recv: getTodayDMY(), mfg: '', exp: '' }
+];
+
+let currentBatches = [
+  { batchNo: '1', amount: 40, time: '09:00', moisture: 0.04, partThrough: 98.5, partRet: 1.5, sieveCheck: 'ผ่าน', w1: 25.08, w2: 25.08, w3: 25.06, w4: 25.08, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' },
+  { batchNo: '2', amount: 40, time: '10:30', moisture: 0.03, partThrough: 98.8, partRet: 1.2, sieveCheck: 'ผ่าน', w1: 25.06, w2: 25.08, w3: 25.08, w4: 25.06, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' },
+  { batchNo: '3', amount: 40, time: '12:00', moisture: 0.04, partThrough: 98.4, partRet: 1.6, sieveCheck: 'ผ่าน', w1: 25.08, w2: 25.06, w3: 25.08, w4: 25.08, w5: 25.08, packCheck: 'ผ่าน', labelCheck: 'ผ่าน', threadCheck: 'ผ่าน' }
+];
+
 function getQCData(){
   try{
-    const r = localStorage.getItem('pgi_qc_data_v7');
+    const r = localStorage.getItem('pgi_qc_data_v9');
     if(r) return JSON.parse(r);
   }catch(e){}
   return [];
@@ -149,7 +200,7 @@ function getQCData(){
 
 function saveQCData(data){
   try{
-    localStorage.setItem('pgi_qc_data_v7', JSON.stringify(data));
+    localStorage.setItem('pgi_qc_data_v9', JSON.stringify(data));
   }catch(e){}
 }
 
@@ -180,6 +231,7 @@ function render(){
   if(activeTab === 'dash') renderDash();
   if(activeTab === 'qc-analysis') renderQCAnalysis();
   if(activeTab === 'list') renderList();
+  if(activeTab === 'settings') renderSettings();
 }
 
 function renderDash(){
@@ -195,11 +247,11 @@ function renderDash(){
       <h3>การบันทึกผลวิเคราะห์คุณภาพและการตรวจสอบบรรจุภัณฑ์</h3>
       <p style="font-size:15px;color:var(--ink-soft)">บันทึกข้อมูลผลแล็บตาม FM-QA-24 และตรวจสอบบรรจุภัณฑ์ตาม FM-QA-19 พร้อมสั่งพิมพ์ COA</p>
       <button type="button" class="btn primary" onclick="switchTab('qc-analysis')">🔬 บันทึกการวิเคราะห์คุณภาพ →</button>
+      <button type="button" class="btn" style="margin-left:6px;" onclick="switchTab('settings')">⚙️ ตั้งค่าระบบ Master Data</button>
     </div>
   `;
 }
 
-// คำนวณวันหมดอายุอัตโนมัติ (1 ปี / Ground Sugar 6 เดือน / ลูกค้าพิเศษ 2 ปี)
 function calculateExpDate(){
   const mfgInput = document.getElementById('qc-mfg');
   const expInput = document.getElementById('qc-exp');
@@ -207,18 +259,19 @@ function calculateExpDate(){
   const custSelect = document.getElementById('qc-cust-select');
 
   if(!mfgInput || !mfgInput.value) return;
-
   const mfg = parseDMY(mfgInput.value);
   if(!mfg) return;
 
-  const isGroundSugar = (prodSelect && prodSelect.value === 'Ground Sugar');
-  const isSpecialCust = (custSelect && custSelect.value === 'SPECIAL_2Y');
+  const master = getMasterData();
+  const matchedProd = master.products.find(p => p.name === prodSelect?.value);
+  const matchedCust = master.customers.find(c => c.name === custSelect?.value);
 
   let exp = new Date(mfg);
-  if(isSpecialCust){
+
+  if(matchedCust && matchedCust.shelfLifeYears === 2){
     exp.setFullYear(exp.getFullYear() + 2);
-  } else if(isGroundSugar){
-    exp.setMonth(exp.getMonth() + 6);
+  } else if(matchedProd && matchedProd.shelfMonths){
+    exp.setMonth(exp.getMonth() + matchedProd.shelfMonths);
   } else {
     exp.setFullYear(exp.getFullYear() + 1);
   }
@@ -228,6 +281,19 @@ function calculateExpDate(){
 
 function renderQCAnalysis(){
   const todayStr = getTodayDMY();
+  const master = getMasterData();
+
+  const prodOptions = master.products.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+  const prodCodeOptions = master.products.map(p => `<option value="${p.code}">${p.code} (${p.name})</option>`).join('');
+  const custOptions = master.customers.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  const pkgOptions = master.packagings.map((pkg, i) => `<option value="${i}">${pkg.name}</option>`).join('');
+
+  const repStaffOptions = master.staffs.map(s => `<option value="${s.name}">${s.name} (${s.position})</option>`).join('');
+  const apprStaffOptions = master.staffs
+    .filter(s => s.canApprove)
+    .map(s => `<option value="${s.name}">${s.name} (${s.position})</option>`).join('');
+
+  const mainMaterials = master.materials.filter(m => m.type === 'Main');
 
   document.getElementById('tab-qc-analysis').innerHTML = `
     <h1 class="page">🔬 บันทึกการวิเคราะห์คุณภาพ &amp; ตรวจการบรรจุ (FM-QA-24 / FM-QA-19)</h1>
@@ -239,31 +305,18 @@ function renderQCAnalysis(){
       <div class="form-grid">
         <div>
           <label>รหัสสินค้า (Product Code)</label>
-          <select id="qc-prod-code">
-            <option value="IC-001">IC-001 (Icing Sugar)</option>
-            <option value="SM-040">SM-040 (Sugar Milled 40s)</option>
-            <option value="CS-030">CS-030 (Caster Sugar 30s)</option>
-            <option value="GS-001">GS-001 (Ground Sugar)</option>
-          </select>
+          <select id="qc-prod-code">${prodCodeOptions}</select>
         </div>
         <div>
           <label>ชนิดผลิตภัณฑ์ (Product Name)</label>
-          <select id="qc-prod">
-            <option value="Icing Sugar">Icing Sugar</option>
-            <option value="Sugar Milled 40s">Sugar Milled 40s</option>
-            <option value="Caster Sugar 30s">Caster Sugar 30s</option>
-            <option value="Ground Sugar">Ground Sugar</option>
-          </select>
+          <select id="qc-prod">${prodOptions}</select>
         </div>
         <div><label>Lot No. ผลิตภัณฑ์</label><input id="qc-lot" placeholder="เช่น IC260801"></div>
         <div>
           <label>ชื่อลูกค้า (Customer)</label>
           <select id="qc-cust-select">
             <option value="">-- เลือกลูกค้า --</option>
-            <option value="บริษัท ซีพีเอฟ (ประเทศไทย) จำกัด (มหาชน)">CPF (ประเทศไทย)</option>
-            <option value="บริษัท เบทาโกร จำกัด (มหาชน)">เบทาโกร (มหาชน)</option>
-            <option value="บริษัท ไทยเพรซิเดนท์ฟูดส์ จำกัด (มหาชน)">ไทยเพรซิเดนท์ฟูดส์</option>
-            <option value="SPECIAL_2Y">ลูกค้าพิเศษเฉพาะ (อายุเก็บรักษา 2 ปี)</option>
+            ${custOptions}
             <option value="__OTHER__">ระบุอื่นๆ เพิ่มเติม...</option>
           </select>
           <input id="qc-cust-custom" placeholder="พิมพ์ชื่อลูกค้าใหม่ที่นี่" style="display:none;margin-top:4px;">
@@ -285,17 +338,15 @@ function renderQCAnalysis(){
       <!-- อัตราส่วนผสมผลิตภัณฑ์และวัตถุดิบ -->
       <h4 style="margin:14px 0 8px;color:var(--teal)">🧪 อัตราส่วนผสมผลิตภัณฑ์ (Recipe &amp; Raw Materials)</h4>
       
-      <!-- วัตถุดิบ 1 (ตายตัว) -->
+      <!-- วัตถุดิบ 1 (Main Base) -->
       <div class="sub-box">
         <b>วัตถุดิบ 1 (Sugar Base)</b>
         <div class="form-grid" style="margin-top:6px;">
-          <div><label>รหัสวัตถุดิบ 1</label><input id="rm1-code" value="RM-SUG-01"></div>
+          <div><label>รหัสวัตถุดิบ 1</label><input id="rm1-code" value="${mainMaterials[0]?.code || 'RM-SUG-01'}"></div>
           <div>
             <label>ชื่อวัตถุดิบ 1</label>
-            <select id="rm1-name">
-              <option value="Refined Sugar">Refined Sugar</option>
-              <option value="White Sugar">White Sugar</option>
-              <option value="Refined Sugar (Bonsucro)">Refined Sugar (Bonsucro)</option>
+            <select id="rm1-name" onchange="syncRM1Code(this.value)">
+              ${mainMaterials.map(m => `<option value="${m.name}">${m.name}</option>`).join('')}
             </select>
           </div>
           <div><label>อัตราส่วน (%)</label><input id="rm1-ratio" type="number" step="0.1" value="97.0"></div>
@@ -311,14 +362,14 @@ function renderQCAnalysis(){
         </div>
       </div>
 
-      <!-- กล่องรายการวัตถุดิบ 2, 3, ... (เพิ่ม/ลด ได้อิสระ) -->
+      <!-- วัตถุดิบรอง 2, 3, ... -->
       <div id="extra-ingredients-list"></div>
       <div style="margin-top:8px;">
         <button type="button" class="btn small primary" onclick="addExtraIngredient()">+ เพิ่มวัตถุดิบรอง (วัตถุดิบ 2, 3, ...)</button>
       </div>
     </div>
 
-    <!-- 2. รายงานวิเคราะห์คุณภาพ & การตรวจการบรรจุทุก Batch (FM-QA-24 & FM-QA-19) [ย้ายมาอันดับ 2] -->
+    <!-- 2. รายงานวิเคราะห์คุณภาพ & การตรวจการบรรจุทุก Batch (FM-QA-24 & FM-QA-19) -->
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
         <h3 style="color:var(--teal);margin:0">2. รายงานการวิเคราะห์คุณภาพ &amp; ตรวจการบรรจุทุก Batch (FM-QA-24 &amp; FM-QA-19)</h3>
@@ -382,15 +433,23 @@ function renderQCAnalysis(){
       </div>
     </div>
 
-    <!-- 3. ข้อมูลบรรจุภัณฑ์ (FM-QA-19) [ย้ายมาอันดับ 3] -->
+    <!-- 3. ข้อมูลบรรจุภัณฑ์ (FM-QA-19) -->
     <div class="card">
-      <h3 style="color:var(--teal)">3. ข้อมูลบรรจุภัณฑ์และเกณฑ์น้ำหนัก (FM-QA-19 Rev.02)</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <h3 style="color:var(--teal);margin:0;">3. ข้อมูลบรรจุภัณฑ์และเกณฑ์น้ำหนัก (FM-QA-19 Rev.02)</h3>
+        <div style="font-size:14px;">
+          โหลดเทมเพลต: 
+          <select id="pkg-template-select" style="width:auto;display:inline-block;padding:3px 8px;" onchange="applyPkgTemplate(this.value)">
+            ${pkgOptions}
+          </select>
+        </div>
+      </div>
       <div class="form-grid">
-        <div><label>ชนิดบรรจุภัณฑ์ชั้นใน</label><input id="pkg-inner" value="HDPE Bag / LDPE liner"></div>
-        <div><label>ชนิดบรรจุภัณฑ์ชั้นนอก</label><input id="pkg-outer" value="PP Woven bag (ถุงกระสอบเย็บด้าย)"></div>
-        <div><label>สีด้ายเย็บ (Thread Color)</label><input id="pkg-thread-color" value="สีขาว / สีชมพู"></div>
-        <div><label>ขนาดบรรจุสุทธิต่อถุง (Net Wt. Kg)</label><input id="pkg-net-spec" type="number" step="0.01" value="25.00"></div>
-        <div><label>เกณฑ์น้ำหนักรวมถุงชั้นใน (Gross Wt. Spec)</label><input id="pkg-gross-spec" value="25.08 Kg (25.00 - 25.15 Kg)"></div>
+        <div><label>ชนิดบรรจุภัณฑ์ชั้นใน</label><input id="pkg-inner" value="${master.packagings[0]?.inner || ''}"></div>
+        <div><label>ชนิดบรรจุภัณฑ์ชั้นนอก</label><input id="pkg-outer" value="${master.packagings[0]?.outer || ''}"></div>
+        <div><label>สีด้ายเย็บ (Thread Color)</label><input id="pkg-thread-color" value="${master.packagings[0]?.thread || ''}"></div>
+        <div><label>ขนาดบรรจุสุทธิต่อถุง (Net Wt. Kg)</label><input id="pkg-net-spec" type="number" step="0.01" value="${master.packagings[0]?.netSpec || 25.00}"></div>
+        <div><label>เกณฑ์น้ำหนักรวมถุงชั้นใน (Gross Wt. Spec)</label><input id="pkg-gross-spec" value="${master.packagings[0]?.grossSpec || ''}"></div>
         <div><label>หมายเลขเครื่องชั่ง</label><input id="pkg-scale-id" value="SCL-QA-01"></div>
       </div>
     </div>
@@ -404,8 +463,14 @@ function renderQCAnalysis(){
         <div><label>รสชาติ (Taste)</label><input id="qa-taste" value="Sweet"></div>
       </div>
       <div class="form-grid">
-        <div><label>ผู้วิเคราะห์ (Report By)</label><input id="qa-rep" placeholder="เจ้าหน้าที่ QA"></div>
-        <div><label>ผู้ทวนสอบ (Approved By)</label><input id="qa-appr" placeholder="หัวหน้าฝ่าย QA"></div>
+        <div>
+          <label>ผู้วิเคราะห์ (Report By)</label>
+          <select id="qa-rep">${repStaffOptions}</select>
+        </div>
+        <div>
+          <label>ผู้ทวนสอบ/อนุมัติ (Approved By) *เฉพาะผู้ช่วย/หัวหน้า</label>
+          <select id="qa-appr">${apprStaffOptions}</select>
+        </div>
       </div>
       <div style="text-align:right;margin-top:14px;">
         <button type="button" class="btn primary" id="btn-save-qc">💾 บันทึกทุกล็อต &amp; ออกใบ COA (FM-QA-25) →</button>
@@ -424,7 +489,6 @@ function renderQCAnalysis(){
     </div>
   `;
 
-  // Render วัตถุดิบรอง
   renderExtraIngredients();
 
   const codeSelect = document.getElementById('qc-prod-code');
@@ -434,19 +498,14 @@ function renderQCAnalysis(){
   const custCustom = document.getElementById('qc-cust-custom');
 
   codeSelect.addEventListener('change', function(){
-    if(PRODUCT_CATALOG[this.value]){
-      nameSelect.value = PRODUCT_CATALOG[this.value];
-    }
+    const target = master.products.find(p => p.code === this.value);
+    if(target) nameSelect.value = target.name;
     calculateExpDate();
   });
 
   nameSelect.addEventListener('change', function(){
-    for(let code in PRODUCT_CATALOG){
-      if(PRODUCT_CATALOG[code] === this.value){
-        codeSelect.value = code;
-        break;
-      }
-    }
+    const target = master.products.find(p => p.name === this.value);
+    if(target) codeSelect.value = target.code;
     calculateExpDate();
   });
 
@@ -487,10 +546,31 @@ function renderQCAnalysis(){
   renderQCTable();
 }
 
-// ฟังก์ชันแสดงรายการวัตถุดิบ 2, 3, ...
+function syncRM1Code(name){
+  const master = getMasterData();
+  const mat = master.materials.find(m => m.name === name);
+  if(mat && document.getElementById('rm1-code')){
+    document.getElementById('rm1-code').value = mat.code;
+  }
+}
+
+function applyPkgTemplate(idx){
+  const master = getMasterData();
+  const pkg = master.packagings[idx];
+  if(!pkg) return;
+  document.getElementById('pkg-inner').value = pkg.inner;
+  document.getElementById('pkg-outer').value = pkg.outer;
+  document.getElementById('pkg-thread-color').value = pkg.thread;
+  document.getElementById('pkg-net-spec').value = pkg.netSpec;
+  document.getElementById('pkg-gross-spec').value = pkg.grossSpec;
+  calcBatchSummary();
+}
+
 function renderExtraIngredients(){
   const container = document.getElementById('extra-ingredients-list');
   if(!container) return;
+  const master = getMasterData();
+  const additives = master.materials.filter(m => m.type === 'Additive');
 
   container.innerHTML = extraIngredients.map(function(item, idx){
     return `
@@ -502,18 +582,14 @@ function renderExtraIngredients(){
         <div class="form-grid">
           <div>
             <label>รหัสวัตถุดิบ</label>
-            <input type="text" value="${item.code}" onchange="updateExtraIng(${idx}, 'code', this.value)" placeholder="เช่น RM-ST-02">
+            <input type="text" id="extra-code-${idx}" value="${item.code}" onchange="updateExtraIng(${idx}, 'code', this.value)" placeholder="เช่น RM-ST-02">
           </div>
           <div>
             <label>ชื่อวัตถุดิบ</label>
-            <input type="text" value="${item.name}" list="ing-name-options" onchange="updateExtraIng(${idx}, 'name', this.value)" placeholder="พิมพ์หรือเลือก">
-            <datalist id="ing-name-options">
-              <option value="Tapioca Starch">
-              <option value="Corn Starch">
-              <option value="Silicon Dioxide">
-              <option value="Premixed 1">
-              <option value="Anti-caking agent">
-            </datalist>
+            <select onchange="onSelectExtraMat(${idx}, this.value)">
+              <option value="">-- เลือกจากฐานข้อมูล --</option>
+              ${additives.map(m => `<option value="${m.name}" ${item.name===m.name?'selected':''}>${m.name} (${m.code})</option>`).join('')}
+            </select>
           </div>
           <div>
             <label>อัตราส่วน (%)</label>
@@ -537,12 +613,26 @@ function renderExtraIngredients(){
   }).join('');
 }
 
+function onSelectExtraMat(idx, matName){
+  const master = getMasterData();
+  const mat = master.materials.find(m => m.name === matName);
+  if(mat){
+    extraIngredients[idx].name = mat.name;
+    extraIngredients[idx].code = mat.code;
+    const codeInp = document.getElementById(`extra-code-${idx}`);
+    if(codeInp) codeInp.value = mat.code;
+  }
+}
+
 function addExtraIngredient(){
+  const master = getMasterData();
   const nextNo = extraIngredients.length + 2;
+  const defaultMat = master.materials.find(m => m.type === 'Additive') || { code: 'RM-EXT', name: 'Additive' };
+
   extraIngredients.push({
     id: nextNo,
-    code: `RM-ING-0${nextNo}`,
-    name: 'Corn Starch',
+    code: defaultMat.code,
+    name: defaultMat.name,
     ratio: 0.0,
     recv: getTodayDMY(),
     mfg: '',
@@ -562,7 +652,6 @@ function updateExtraIng(idx, field, val){
   }
 }
 
-// ติ๊กผ่านทั้งหมดในคลิกเดียว (สภาพถุง, ฉลาก, สีด้าย)
 function bulkPassBatchCheck(){
   currentBatches.forEach(function(b){
     b.packCheck = 'ผ่าน';
@@ -693,8 +782,6 @@ function saveRecord(){
   let finalCust = custSelect;
   if(custSelect === '__OTHER__'){
     finalCust = document.getElementById('qc-cust-custom').value.trim();
-  } else if(custSelect === 'SPECIAL_2Y'){
-    finalCust = 'ลูกค้าสัญญาพิเศษ (รับประกัน 2 ปี)';
   }
 
   const summary = calcBatchSummary();
@@ -706,7 +793,7 @@ function saveRecord(){
     cust: finalCust,
     mfg: document.getElementById('qc-mfg').value,
     exp: document.getElementById('qc-exp').value,
-    deliv: document.getElementById('qc-deliv').value, // ว่างได้
+    deliv: document.getElementById('qc-deliv').value,
     rawPolar: document.getElementById('qc-raw-polar').value,
     rawColor: document.getElementById('qc-raw-color').value,
     rawInvert: document.getElementById('qc-raw-invert').value,
@@ -807,7 +894,434 @@ function renderList(){
   `;
 }
 
-// 5. พิมพ์ COA (FM-QA-25 Rev.01) รูปแบบวันที่ dd/mm/yyyy
+// ----------------------------------------------------
+// โมดูล Master Data: เพิ่ม / แก้ไข / ลบ ครบ 5 ส่วน
+// ----------------------------------------------------
+function renderSettings(){
+  document.getElementById('tab-settings').innerHTML = `
+    <h1 class="page">⚙️ การตั้งค่าระบบ &amp; ฐานข้อมูลหลัก (Master Data)</h1>
+    <p class="sub">จัดการข้อมูลลูกค้า ผลิตภัณฑ์ วัตถุดิบ บรรจุภัณฑ์ และรายชื่อพนักงานที่มีสิทธิ์อนุมัติ</p>
+
+    <div class="sub-tabs">
+      <button class="${activeSettingSubTab==='cust'?'active':''}" onclick="setMasterTab('cust')">1. ข้อมูลลูกค้า</button>
+      <button class="${activeSettingSubTab==='prod'?'active':''}" onclick="setMasterTab('prod')">2. ข้อมูลผลิตภัณฑ์</button>
+      <button class="${activeSettingSubTab==='mat'?'active':''}" onclick="setMasterTab('mat')">3. ข้อมูลวัตถุดิบ &amp; ส่วนผสม</button>
+      <button class="${activeSettingSubTab==='pkg'?'active':''}" onclick="setMasterTab('pkg')">4. ข้อมูลบรรจุภัณฑ์</button>
+      <button class="${activeSettingSubTab==='staff'?'active':''}" onclick="setMasterTab('staff')">5. ข้อมูลเจ้าหน้าที่ &amp; สิทธิ์อนุมัติ</button>
+    </div>
+
+    <div id="master-sub-content"></div>
+  `;
+  renderMasterSubTab();
+}
+
+function setMasterTab(tab){
+  activeSettingSubTab = tab;
+  renderSettings();
+}
+
+function renderMasterSubTab(){
+  const container = document.getElementById('master-sub-content');
+  if(!container) return;
+  const master = getMasterData();
+
+  if(activeSettingSubTab === 'cust'){
+    container.innerHTML = `
+      <div class="card">
+        <h3>1. ข้อมูลลูกค้า (Customer Database)</h3>
+        <div class="form-grid" style="margin-bottom:12px;">
+          <div><label>รหัสลูกค้า</label><input id="add-cust-code" placeholder="เช่น CUST-04"></div>
+          <div><label>ชื่อลูกค้า / บริษัท</label><input id="add-cust-name" placeholder="ชื่อบริษัทลูกค้า"></div>
+          <div>
+            <label>อายุสินค้าที่รับประกัน (ปี)</label>
+            <select id="add-cust-life">
+              <option value="1">1 ปี (มาตรฐานทั่วไป)</option>
+              <option value="2">2 ปี (ลูกค้าสัญญาพิเศษ)</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn primary" onclick="addCustomerMaster()">+ เพิ่มลูกค้า</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>รหัสลูกค้า</th><th>ชื่อลูกค้า</th><th>อายุรับประกัน (ปี)</th><th>จัดการ</th></tr>
+          </thead>
+          <tbody>
+            ${master.customers.map((c, i) => `
+              <tr>
+                <td>${c.code}</td>
+                <td style="text-align:left;">${c.name}</td>
+                <td>${c.shelfLifeYears} ปี</td>
+                <td>
+                  <button class="btn small" onclick="openEditModal('customers', ${i})">แก้ไข</button>
+                  <button class="btn small danger" onclick="deleteMasterItem('customers', ${i})">ลบ</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if(activeSettingSubTab === 'prod'){
+    container.innerHTML = `
+      <div class="card">
+        <h3>2. ข้อมูลผลิตภัณฑ์ (Product Specifications)</h3>
+        <div class="form-grid" style="margin-bottom:12px;">
+          <div><label>รหัสสินค้า</label><input id="add-prod-code" placeholder="เช่น IC-002"></div>
+          <div><label>ชื่อผลิตภัณฑ์</label><input id="add-prod-name" placeholder="ชื่อสินค้า"></div>
+          <div>
+            <label>อายุการเก็บรักษาเริ่มต้น (เดือน)</label>
+            <input type="number" id="add-prod-months" value="12" placeholder="เช่น 6 หรือ 12">
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn primary" onclick="addProductMaster()">+ เพิ่มผลิตภัณฑ์</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>รหัสสินค้า</th><th>ชื่อผลิตภัณฑ์</th><th>อายุสินค้าเริ่มต้น (เดือน)</th><th>จัดการ</th></tr>
+          </thead>
+          <tbody>
+            ${master.products.map((p, i) => `
+              <tr>
+                <td>${p.code}</td>
+                <td style="text-align:left;">${p.name}</td>
+                <td>${p.shelfMonths} เดือน</td>
+                <td>
+                  <button class="btn small" onclick="openEditModal('products', ${i})">แก้ไข</button>
+                  <button class="btn small danger" onclick="deleteMasterItem('products', ${i})">ลบ</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if(activeSettingSubTab === 'mat'){
+    container.innerHTML = `
+      <div class="card">
+        <h3>3. ข้อมูลวัตถุดิบและส่วนผสม (Raw Materials &amp; Ingredients)</h3>
+        <div class="form-grid" style="margin-bottom:12px;">
+          <div><label>รหัสวัตถุดิบ</label><input id="add-mat-code" placeholder="เช่น RM-AD-03"></div>
+          <div><label>ชื่อวัตถุดิบ</label><input id="add-mat-name" placeholder="เช่น Tricalcium Phosphate"></div>
+          <div>
+            <label>ประเภทวัตถุดิบ</label>
+            <select id="add-mat-type">
+              <option value="Additive">Additive / แป้ง / สารปรุงแต่ง</option>
+              <option value="Main">Sugar Base (วัตถุดิบหลัก)</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn primary" onclick="addMaterialMaster()">+ เพิ่มวัตถุดิบ</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>รหัสวัตถุดิบ</th><th>ชื่อวัตถุดิบ</th><th>ประเภท</th><th>จัดการ</th></tr>
+          </thead>
+          <tbody>
+            ${master.materials.map((m, i) => `
+              <tr>
+                <td>${m.code}</td>
+                <td style="text-align:left;">${m.name}</td>
+                <td>${m.type === 'Main' ? 'Sugar Base (หลัก)' : 'Additive / แป้ง (รอง)'}</td>
+                <td>
+                  <button class="btn small" onclick="openEditModal('materials', ${i})">แก้ไข</button>
+                  <button class="btn small danger" onclick="deleteMasterItem('materials', ${i})">ลบ</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if(activeSettingSubTab === 'pkg'){
+    container.innerHTML = `
+      <div class="card">
+        <h3>4. ข้อมูลบรรจุภัณฑ์ (Packaging &amp; Pallet Specs)</h3>
+        <div class="form-grid" style="margin-bottom:12px;">
+          <div><label>ชื่อสเปกบรรจุภัณฑ์</label><input id="add-pkg-name" placeholder="เช่น ถุงกระสอบ 25 Kg"></div>
+          <div><label>บรรจุภัณฑ์ชั้นใน</label><input id="add-pkg-inner" value="HDPE Bag / LDPE liner"></div>
+          <div><label>บรรจุภัณฑ์ชั้นนอก</label><input id="add-pkg-outer" value="PP Woven bag"></div>
+          <div><label>ขนาดบรรจุสุทธิ (Kg)</label><input type="number" step="0.01" id="add-pkg-net" value="25.00"></div>
+          <div><label>เกณฑ์ Gross Weight</label><input id="add-pkg-gross" value="25.08 Kg (25.00 - 25.15 Kg)"></div>
+          <div><label>สีด้ายเย็บ</label><input id="add-pkg-thread" value="สีขาว / สีชมพู"></div>
+          <div><label>สเปกการเรียงบนพาเลท</label><input id="add-pkg-pallet" value="พาเลทละ 40 ถุง (1.00 MT)"></div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn primary" onclick="addPackagingMaster()">+ บันทึกสเปก</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>ชื่อสเปก</th><th>ชั้นใน</th><th>ชั้นนอก</th><th>Net Wt.</th><th>เกณฑ์ Gross Wt.</th><th>สีด้าย</th><th>จัดการ</th></tr>
+          </thead>
+          <tbody>
+            ${master.packagings.map((pkg, i) => `
+              <tr>
+                <td><b>${pkg.name}</b></td>
+                <td>${pkg.inner}</td>
+                <td>${pkg.outer}</td>
+                <td>${pkg.netSpec} Kg</td>
+                <td>${pkg.grossSpec}</td>
+                <td>${pkg.thread}</td>
+                <td>
+                  <button class="btn small" onclick="openEditModal('packagings', ${i})">แก้ไข</button>
+                  <button class="btn small danger" onclick="deleteMasterItem('packagings', ${i})">ลบ</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if(activeSettingSubTab === 'staff'){
+    container.innerHTML = `
+      <div class="card">
+        <h3>5. ข้อมูลเจ้าหน้าที่/ตำแหน่ง/สิทธิ์อนุมัติ (อนุมัติต้องผู้ช่วย/หัวหน้าเท่านั้น)</h3>
+        <div class="form-grid" style="margin-bottom:12px;">
+          <div><label>รหัสพนักงาน</label><input id="add-staff-id" placeholder="เช่น ST-04"></div>
+          <div><label>ชื่อ-นามสกุล</label><input id="add-staff-name" placeholder="ชื่อเจ้าหน้าที่"></div>
+          <div>
+            <label>ตำแหน่ง</label>
+            <select id="add-staff-pos" onchange="toggleStaffApproval(this.value)">
+              <option value="เจ้าหน้าที่ QA">เจ้าหน้าที่ QA</option>
+              <option value="ผู้ช่วยหัวหน้าฝ่าย QA">ผู้ช่วยหัวหน้าฝ่าย QA</option>
+              <option value="หัวหน้าฝ่าย QA">หัวหน้าฝ่าย QA</option>
+            </select>
+          </div>
+          <div>
+            <label>สิทธิ์อนุมัติเอกสาร COA</label>
+            <input type="text" id="add-staff-canappr" value="ไม่มีสิทธิ์อนุมัติ" readonly style="background:#f0f0f0;">
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn primary" onclick="addStaffMaster()">+ เพิ่มเจ้าหน้าที่</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>ตำแหน่ง</th><th>สิทธิ์ผู้อนุมัติ (Approved By)</th><th>จัดการ</th></tr>
+          </thead>
+          <tbody>
+            ${master.staffs.map((s, i) => `
+              <tr>
+                <td>${s.id}</td>
+                <td style="text-align:left;">${s.name}</td>
+                <td>${s.position}</td>
+                <td><span style="color:${s.canApprove ? '#276A3C' : '#888'};font-weight:700;">${s.canApprove ? '✓ มีสิทธิ์อนุมัติ' : '—'}</span></td>
+                <td>
+                  <button class="btn small" onclick="openEditModal('staffs', ${i})">แก้ไข</button>
+                  <button class="btn small danger" onclick="deleteMasterItem('staffs', ${i})">ลบ</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+}
+
+function toggleStaffApproval(pos){
+  const el = document.getElementById('add-staff-canappr');
+  if(!el) return;
+  const isAppr = (pos === 'ผู้ช่วยหัวหน้าฝ่าย QA' || pos === 'หัวหน้าฝ่าย QA');
+  el.value = isAppr ? '✓ มีสิทธิ์อนุมัติ' : 'ไม่มีสิทธิ์อนุมัติ';
+}
+
+function addCustomerMaster(){
+  const code = document.getElementById('add-cust-code').value.trim();
+  const name = document.getElementById('add-cust-name').value.trim();
+  const shelfLifeYears = parseInt(document.getElementById('add-cust-life').value, 10) || 1;
+  if(!code || !name) return alert('กรุณากรอกรหัสและชื่อลูกค้า');
+  const master = getMasterData();
+  master.customers.push({ code, name, shelfLifeYears });
+  saveMasterData(master);
+  renderMasterSubTab();
+}
+
+function addProductMaster(){
+  const code = document.getElementById('add-prod-code').value.trim();
+  const name = document.getElementById('add-prod-name').value.trim();
+  const shelfMonths = parseInt(document.getElementById('add-prod-months').value, 10) || 12;
+  if(!code || !name) return alert('กรุณากรอกรหัสและชื่อผลิตภัณฑ์');
+  const master = getMasterData();
+  master.products.push({ code, name, shelfMonths });
+  saveMasterData(master);
+  renderMasterSubTab();
+}
+
+function addMaterialMaster(){
+  const code = document.getElementById('add-mat-code').value.trim();
+  const name = document.getElementById('add-mat-name').value.trim();
+  const type = document.getElementById('add-mat-type').value;
+  if(!code || !name) return alert('กรุณากรอกรหัสและชื่อวัตถุดิบ');
+  const master = getMasterData();
+  master.materials.push({ code, name, type });
+  saveMasterData(master);
+  renderMasterSubTab();
+}
+
+function addPackagingMaster(){
+  const name = document.getElementById('add-pkg-name').value.trim();
+  const inner = document.getElementById('add-pkg-inner').value.trim();
+  const outer = document.getElementById('add-pkg-outer').value.trim();
+  const netSpec = parseFloat(document.getElementById('add-pkg-net').value) || 25.00;
+  const grossSpec = document.getElementById('add-pkg-gross').value.trim();
+  const thread = document.getElementById('add-pkg-thread').value.trim();
+  const palletSpec = document.getElementById('add-pkg-pallet').value.trim();
+  if(!name) return alert('กรุณาระบุชื่อสเปกบรรจุภัณฑ์');
+  const master = getMasterData();
+  master.packagings.push({ name, inner, outer, netSpec, grossSpec, thread, palletSpec });
+  saveMasterData(master);
+  renderMasterSubTab();
+}
+
+function addStaffMaster(){
+  const id = document.getElementById('add-staff-id').value.trim();
+  const name = document.getElementById('add-staff-name').value.trim();
+  const position = document.getElementById('add-staff-pos').value;
+  const canApprove = (position === 'ผู้ช่วยหัวหน้าฝ่าย QA' || position === 'หัวหน้าฝ่าย QA');
+  if(!id || !name) return alert('กรุณากรอกรหัสและชื่อพนักงาน');
+  const master = getMasterData();
+  master.staffs.push({ id, name, position, canApprove });
+  saveMasterData(master);
+  renderMasterSubTab();
+}
+
+function deleteMasterItem(key, idx){
+  const master = getMasterData();
+  if(master[key] && master[key].length > 1){
+    if(confirm('ต้องการลบรายการนี้ใช่หรือไม่?')){
+      master[key].splice(idx, 1);
+      saveMasterData(master);
+      renderMasterSubTab();
+    }
+  } else {
+    alert('ต้องมีข้อมูลอย่างน้อย 1 รายการ');
+  }
+}
+
+// ระบบ Modal แก้ไข Master Data
+function openEditModal(key, idx){
+  const master = getMasterData();
+  const item = master[key][idx];
+  if(!item) return;
+
+  let formHtml = '';
+  if(key === 'customers'){
+    formHtml = `
+      <h3>แก้ไขข้อมูลลูกค้า</h3>
+      <div style="margin-bottom:8px;"><label>รหัสลูกค้า</label><input id="edit-c-code" value="${item.code}"></div>
+      <div style="margin-bottom:8px;"><label>ชื่อลูกค้า</label><input id="edit-c-name" value="${item.name}"></div>
+      <div style="margin-bottom:12px;">
+        <label>อายุรับประกัน (ปี)</label>
+        <select id="edit-c-life">
+          <option value="1" ${item.shelfLifeYears===1?'selected':''}>1 ปี</option>
+          <option value="2" ${item.shelfLifeYears===2?'selected':''}>2 ปี</option>
+        </select>
+      </div>
+    `;
+  } else if(key === 'products'){
+    formHtml = `
+      <h3>แก้ไขข้อมูลผลิตภัณฑ์</h3>
+      <div style="margin-bottom:8px;"><label>รหัสสินค้า</label><input id="edit-p-code" value="${item.code}"></div>
+      <div style="margin-bottom:8px;"><label>ชื่อสินค้า</label><input id="edit-p-name" value="${item.name}"></div>
+      <div style="margin-bottom:12px;"><label>อายุเก็บรักษา (เดือน)</label><input type="number" id="edit-p-m" value="${item.shelfMonths}"></div>
+    `;
+  } else if(key === 'materials'){
+    formHtml = `
+      <h3>แก้ไขข้อมูลวัตถุดิบ</h3>
+      <div style="margin-bottom:8px;"><label>รหัสวัตถุดิบ</label><input id="edit-m-code" value="${item.code}"></div>
+      <div style="margin-bottom:8px;"><label>ชื่อวัตถุดิบ</label><input id="edit-m-name" value="${item.name}"></div>
+      <div style="margin-bottom:12px;">
+        <label>ประเภทวัตถุดิบ</label>
+        <select id="edit-m-type">
+          <option value="Main" ${item.type==='Main'?'selected':''}>Sugar Base (หลัก)</option>
+          <option value="Additive" ${item.type==='Additive'?'selected':''}>Additive / แป้ง (รอง)</option>
+        </select>
+      </div>
+    `;
+  } else if(key === 'packagings'){
+    formHtml = `
+      <h3>แก้ไขข้อมูลบรรจุภัณฑ์</h3>
+      <div style="margin-bottom:6px;"><label>ชื่อสเปก</label><input id="edit-pkg-name" value="${item.name}"></div>
+      <div style="margin-bottom:6px;"><label>ชั้นใน</label><input id="edit-pkg-inner" value="${item.inner}"></div>
+      <div style="margin-bottom:6px;"><label>ชั้นนอก</label><input id="edit-pkg-outer" value="${item.outer}"></div>
+      <div style="margin-bottom:6px;"><label>Net Wt. (Kg)</label><input type="number" step="0.01" id="edit-pkg-net" value="${item.netSpec}"></div>
+      <div style="margin-bottom:6px;"><label>เกณฑ์ Gross Wt.</label><input id="edit-pkg-gross" value="${item.grossSpec}"></div>
+      <div style="margin-bottom:12px;"><label>สีด้ายเย็บ</label><input id="edit-pkg-thread" value="${item.thread}"></div>
+    `;
+  } else if(key === 'staffs'){
+    formHtml = `
+      <h3>แก้ไขข้อมูลเจ้าหน้าที่</h3>
+      <div style="margin-bottom:8px;"><label>รหัสพนักงาน</label><input id="edit-st-id" value="${item.id}"></div>
+      <div style="margin-bottom:8px;"><label>ชื่อ-นามสกุล</label><input id="edit-st-name" value="${item.name}"></div>
+      <div style="margin-bottom:12px;">
+        <label>ตำแหน่ง</label>
+        <select id="edit-st-pos">
+          <option value="เจ้าหน้าที่ QA" ${item.position==='เจ้าหน้าที่ QA'?'selected':''}>เจ้าหน้าที่ QA</option>
+          <option value="ผู้ช่วยหัวหน้าฝ่าย QA" ${item.position==='ผู้ช่วยหัวหน้าฝ่าย QA'?'selected':''}>ผู้ช่วยหัวหน้าฝ่าย QA</option>
+          <option value="หัวหน้าฝ่าย QA" ${item.position==='หัวหน้าฝ่าย QA'?'selected':''}>หัวหน้าฝ่าย QA</option>
+        </select>
+      </div>
+    `;
+  }
+
+  document.getElementById('modalArea').innerHTML = `
+    <div class="modal-overlay">
+      <div class="modal-box">
+        ${formHtml}
+        <div style="text-align:right;display:flex;justify-content:flex-end;gap:8px;">
+          <button class="btn" onclick="closeEditModal()">ยกเลิก</button>
+          <button class="btn primary" onclick="saveEditModal('${key}', ${idx})">บันทึกการแก้ไข</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function closeEditModal(){
+  document.getElementById('modalArea').innerHTML = '';
+}
+
+function saveEditModal(key, idx){
+  const master = getMasterData();
+  if(key === 'customers'){
+    master.customers[idx].code = document.getElementById('edit-c-code').value.trim();
+    master.customers[idx].name = document.getElementById('edit-c-name').value.trim();
+    master.customers[idx].shelfLifeYears = parseInt(document.getElementById('edit-c-life').value, 10);
+  } else if(key === 'products'){
+    master.products[idx].code = document.getElementById('edit-p-code').value.trim();
+    master.products[idx].name = document.getElementById('edit-p-name').value.trim();
+    master.products[idx].shelfMonths = parseInt(document.getElementById('edit-p-m').value, 10);
+  } else if(key === 'materials'){
+    master.materials[idx].code = document.getElementById('edit-m-code').value.trim();
+    master.materials[idx].name = document.getElementById('edit-m-name').value.trim();
+    master.materials[idx].type = document.getElementById('edit-m-type').value;
+  } else if(key === 'packagings'){
+    master.packagings[idx].name = document.getElementById('edit-pkg-name').value.trim();
+    master.packagings[idx].inner = document.getElementById('edit-pkg-inner').value.trim();
+    master.packagings[idx].outer = document.getElementById('edit-pkg-outer').value.trim();
+    master.packagings[idx].netSpec = parseFloat(document.getElementById('edit-pkg-net').value) || 25.00;
+    master.packagings[idx].grossSpec = document.getElementById('edit-pkg-gross').value.trim();
+    master.packagings[idx].thread = document.getElementById('edit-pkg-thread').value.trim();
+  } else if(key === 'staffs'){
+    const pos = document.getElementById('edit-st-pos').value;
+    master.staffs[idx].id = document.getElementById('edit-st-id').value.trim();
+    master.staffs[idx].name = document.getElementById('edit-st-name').value.trim();
+    master.staffs[idx].position = pos;
+    master.staffs[idx].canApprove = (pos === 'ผู้ช่วยหัวหน้าฝ่าย QA' || pos === 'หัวหน้าฝ่าย QA');
+  }
+
+  saveMasterData(master);
+  closeEditModal();
+  renderMasterSubTab();
+}
+
+// ----------------------------------------------------
+// พิมพ์ COA (FM-QA-25 Rev.01)
+// ----------------------------------------------------
 function printCOA(index){
   const item = getQCData()[index];
   if(!item) return;
@@ -816,8 +1330,6 @@ function printCOA(index){
 
   document.getElementById('printArea').innerHTML = `
     <div class="print-container">
-      
-      <!-- HEADER -->
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="border:2px solid #1F4B49;border-radius:4px;padding:2px 6px;text-align:center;line-height:1;color:#1F4B49;">
@@ -836,7 +1348,6 @@ function printCOA(index){
       <div style="text-align:center;font-weight:700;font-style:italic;font-size:22px;margin:10px 0 2px;">Certificate Of Analysis</div>
       <div style="text-align:center;font-weight:700;font-style:italic;font-size:18px;margin-bottom:10px;">${item.prod}</div>
       
-      <!-- ข้อมูลผู้ผลิตและลูกค้า -->
       <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:15px;border:1px solid #000;">
         <tr>
           <td style="padding:4px 6px;border:1px solid #000;width:50%;background:#f9f9f9;"><b>Producer Information</b></td>
@@ -864,7 +1375,6 @@ function printCOA(index){
         </tr>
       </table>
 
-      <!-- ตารางผลวิเคราะห์คุณภาพและ Particle size -->
       <table style="width:100%;border-collapse:collapse;font-size:15px;margin-bottom:8px;border:1px solid #000;">
         <thead>
           <tr style="background:#f2f2f2;">
@@ -883,8 +1393,6 @@ function printCOA(index){
           <tr><td style="border:1px solid #000;padding:3px 6px;">Color</td><td style="border:1px solid #000;padding:3px 6px;">≤ 60 Icumsa</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.rawColor}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">Icumsa</td></tr>
           <tr><td style="border:1px solid #000;padding:3px 6px;">Invert Sugar</td><td style="border:1px solid #000;padding:3px 6px;">≤ 0.04 % w/w</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.rawInvert}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">% w/w</td></tr>
           <tr><td style="border:1px solid #000;padding:3px 6px;">Conductivity Ash</td><td style="border:1px solid #000;padding:3px 6px;">≤ 0.04 %</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.rawAsh || '0.015'}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">%</td></tr>
-          
-          <!-- Particle Size -->
           <tr>
             <td rowspan="3" style="border:1px solid #000;padding:3px 6px;vertical-align:top;"><b>Particle Size</b></td>
             <td colspan="3" style="border:1px solid #000;padding:3px 6px;background:#fafafa;"><i>Sieve Analysis Testing</i></td>
@@ -902,7 +1410,6 @@ function printCOA(index){
         </tbody>
       </table>
 
-      <!-- ข้อมูลบรรจุภัณฑ์ -->
       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:14px;border:1px solid #000;">
         <thead>
           <tr style="background:#f2f2f2;">
@@ -925,7 +1432,6 @@ function printCOA(index){
         </tbody>
       </table>
 
-      <!-- ลายเซ็นต์ -->
       <div style="display:flex;justify-content:space-between;margin-top:20px;font-size:15px;text-align:center;">
         <div style="width:45%;">
           Report By............................................................<br>
@@ -937,19 +1443,19 @@ function printCOA(index){
         </div>
       </div>
 
-      <!-- FOOTER -->
       <div style="margin-top:20px;padding-top:6px;border-top:1px solid #777;text-align:center;font-size:13.5px;color:#222;line-height:1.35;">
         <div style="font-weight:700;">บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชั่นแนล จำกัด</div>
         <div>16/1 ซอยบางกระดี่ 23 แขวงแสมดำ เขตบางขุนเทียน กรุงเทพ 10150</div>
         <div>โทรศัพท์ 0-2452-2934 แฟกซ์ 0-2452-2935</div>
       </div>
-
     </div>
   `;
   window.print();
 }
 
-// 6. พิมพ์ FM-QA-19 Rev.02 รูปแบบวันที่ dd/mm/yyyy
+// ----------------------------------------------------
+// พิมพ์ FM-QA-19 Rev.02
+// ----------------------------------------------------
 function printPackagingReport(index){
   const item = getQCData()[index];
   if(!item) return;
@@ -958,8 +1464,6 @@ function printPackagingReport(index){
 
   document.getElementById('printArea').innerHTML = `
     <div class="print-container">
-      
-      <!-- HEADER -->
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="border:2px solid #1F4B49;border-radius:4px;padding:2px 6px;text-align:center;line-height:1;color:#1F4B49;">
@@ -992,7 +1496,6 @@ function printPackagingReport(index){
         </tr>
       </table>
 
-      <!-- ตารางสุ่มชั่งน้ำหนักตามฟอร์มจริง -->
       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:8px;border:1px solid #000;">
         <thead>
           <tr style="background:#f2f2f2;">
@@ -1038,7 +1541,6 @@ function printPackagingReport(index){
         </tbody>
       </table>
 
-      <!-- หมายเหตุ -->
       <div style="font-size:13px;color:#222;line-height:1.25;margin-bottom:16px;">
         <b>หมายเหตุ:</b><br>
         1. น้ำหนักผลิตภัณฑ์รวมกับบรรจุภัณฑ์ชั้นใน, ขนาด 10 Kg (10.06 Kg), ขนาด 15 Kg (15.06 Kg), ขนาด 25 Kg (25.08 Kg), ขนาด 30 Kg (30.25Kg), ขนาด 40 Kg (40.18 Kg) และ Paper Bag Icing 25 Kg (25.30 Kg)<br>
@@ -1047,7 +1549,6 @@ function printPackagingReport(index){
         4. ระบุเครื่องหมาย ✓ หมายถึง ถูกต้อง ยอมรับ หรือเครื่องหมาย X หมายถึง ไม่ถูกต้อง ไม่ยอมรับ
       </div>
 
-      <!-- ส่วนลงนาม -->
       <div style="display:flex;justify-content:space-between;font-size:15px;text-align:center;margin-top:16px;">
         <div style="width:45%;">
           ผู้ตรวจสอบ............................................................<br>
@@ -1060,7 +1561,6 @@ function printPackagingReport(index){
           <span style="font-size:13px;">หัวหน้าฝ่ายประกันคุณภาพ</span>
         </div>
       </div>
-
     </div>
   `;
   window.print();
