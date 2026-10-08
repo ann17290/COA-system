@@ -1435,7 +1435,7 @@ function printQA24(index){
               <td style="border:1px solid #000;padding:3px;text-align:left;">${ex.name || '-'}</td>
               <td style="border:1px solid #000;padding:3px;">${ex.ratio}%</td>
               <td style="border:1px solid #000;padding:3px;">${ex.recv || '-'}</td>
-              <td style="border:1px solid #000;padding:3px;">${ex.mfg \vert{}\vert{} '-'} /${ex.exp || '-'}</td>
+              // ✅ แก้ไขเป็น: <td style="border:1px solid #000;padding:3px;">${ex.mfg || '-'} / ${ex.exp || '-'}</td>
             </tr>
           `).join('')}
         </tbody>
