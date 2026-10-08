@@ -1365,9 +1365,9 @@ function saveEditModal(key, idx){
   renderMasterSubTab();
 }
 
-// ----------------------------------------------------
-// 1. พิมพ์รายงานวิเคราะห์คุณภาพ (FM-QA-24 Rev.01)
-// ----------------------------------------------------
+// ====================================================
+// 1. พิมพ์ FM-QA-24 Rev.01 ตามแบบฟอร์ม PDF จริง
+// ====================================================
 function printQA24(index){
   const item = getQCData()[index];
   if(!item) return;
@@ -1375,132 +1375,153 @@ function printQA24(index){
   const rm1 = item.ingredients?.rm1 || {};
   const extras = item.ingredients?.extras || [];
 
+  const isIcing = item.prod.includes('Icing Sugar');
+  const isSM = item.prod.includes('Sugar Milled');
+  const isCS = item.prod.includes('Caster Sugar');
+  const isGS = item.prod.includes('Ground Sugar');
+
+  const isRefined = rm1.name?.includes('Refined');
+  const isWhite = rm1.name?.includes('White');
+  const isBonsucro = rm1.name?.includes('Bonsucro');
+
+  const extraTexts = extras.map(e => `${e.name} ${e.ratio}%`).join(', ');
+
   document.getElementById('printArea').innerHTML = `
-    <div class="print-container">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="border:2px solid #1F4B49;border-radius:4px;padding:2px 6px;text-align:center;line-height:1;color:#1F4B49;">
-            <div style="font-weight:900;font-size:18px;letter-spacing:1px;">PGI</div>
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;">International</div>
+    <div class="print-container" style="font-size:13px;line-height:1.25;color:#000;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #000;padding-bottom:4px;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="border:2px solid #1F4B49;border-radius:4px;padding:2px 5px;text-align:center;line-height:1;color:#1F4B49;">
+            <div style="font-weight:900;font-size:16px;">PGI</div>
+            <div style="font-size:8px;font-weight:700;">International</div>
           </div>
           <div>
-            <div style="font-weight:700;font-size:18px;color:#000;">บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชั่นแนล จำกัด</div>
-            <div style="font-weight:600;font-size:16px;color:#111;">PGI FOODS INTERNATIONAL COMPANY LIMITED</div>
+            <div style="font-weight:700;font-size:16px;">บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชั่นแนล จำกัด</div>
+            <div style="font-weight:600;font-size:13px;">PGI FOODS INTERNATIONAL COMPANY LIMITED</div>
           </div>
         </div>
-        <div style="font-size:14px;font-weight:600;white-space:nowrap;padding-top:2px;">FM-QA-24 Rev.01, 01/07/2025</div>
+        <div style="font-weight:700;font-size:12px;text-align:right;">FM-QA-24 Rev.01, 01/08/2025</div>
       </div>
 
-      <div style="text-align:center;font-weight:700;font-size:20px;margin:8px 0 8px;">รายงานการวิเคราะห์คุณภาพผลิตภัณฑ์ (In-Process &amp; Final Product Analysis)</div>
+      <div style="text-align:center;font-weight:700;font-size:17px;margin:4px 0 10px;">รายงานผลการวิเคราะห์คุณภาพผลิตภัณฑ์สำเร็จรูป</div>
 
-      <table style="width:100%;border-collapse:collapse;font-size:15px;margin-bottom:8px;border:1px solid #000;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:6px;">
         <tr>
-          <td style="padding:4px;border:1px solid #000;width:33%;"><b>ผลิตภัณฑ์:</b> ${item.prod} (${item.prodCode})</td>
-          <td style="padding:4px;border:1px solid #000;width:33%;"><b>Lot No.:</b> ${item.lot}</td>
-          <td style="padding:4px;border:1px solid #000;width:34%;"><b>ลูกค้า:</b> ${item.cust || '-'}</td>
+          <td style="width:50%;padding:2px 0;"><b>วันที่วิเคราะห์:</b> ${item.date || item.mfg}</td>
+          <td style="width:50%;padding:2px 0;"><b>ผลิตภัณฑ์ Lot No.:</b> ${item.lot}</td>
         </tr>
         <tr>
-          <td style="padding:4px;border:1px solid #000;"><b>วันที่ผลิต:</b> ${item.mfg}</td>
-          <td style="padding:4px;border:1px solid #000;"><b>วันที่หมดอายุ:</b> ${item.exp || '-'}</td>
-          <td style="padding:4px;border:1px solid #000;"><b>ยอดผลิตรวม:</b> ${s.totalBags} ถุง (${s.totalMT} MT)</td>
+          <td style="padding:2px 0;"><b>ชื่อลูกค้า:</b> ${item.cust || '-'}</td>
+          <td style="padding:2px 0;"><b>วันที่ผลิต:</b> ${item.mfg}</td>
+        </tr>
+        <tr>
+          <td style="padding:2px 0;"><b>จำนวนสั่งผลิต:</b> ${s.totalBags} ถุง (${s.totalMT} MT)</td>
+          <td style="padding:2px 0;"><b>วันที่หมดอายุ:</b> ${item.exp || '-'}</td>
+        </tr>
+        <tr>
+          <td style="padding:2px 0;"><b>กำหนดส่งวันที่:</b> ${item.deliv || '-'}</td>
+          <td style="padding:2px 0;"><b>เวลาเริ่ม-จบการผลิต:</b> -</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:3px 0;">
+            <b>ชนิดผลิตภัณฑ์:</b> 
+            ${isIcing ? '[✓]' : '[&nbsp;]'} Icing Sugar &nbsp;&nbsp;
+            ${isGS ? '[✓]' : '[&nbsp;]'} Ground Sugar &nbsp;&nbsp;
+            ${isCS ? '[✓]' : '[&nbsp;]'} Caster Sugar 30s &nbsp;&nbsp;
+            ${isSM ? '[✓]' : '[&nbsp;]'} Sugar Milled 40s
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:2px 0;">
+            <b>อัตราส่วนผสมผลิตภัณฑ์:</b> ${rm1.name || 'Sugar'} ${rm1.ratio}% ${extraTexts ? ', ' + extraTexts : ''}
+          </td>
         </tr>
       </table>
 
-      <!-- ข้อมูลวัตถุดิบและส่วนผสม -->
-      <div style="font-weight:700;font-size:15px;margin:6px 0 2px;">1. ข้อมูลวัตถุดิบและผลแล็บวัตถุดิบตั้งต้น (Raw Material Lab Test)</div>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:8px;border:1px solid #000;">
-        <thead>
-          <tr style="background:#f2f2f2;">
-            <th style="border:1px solid #000;padding:3px;">ประเภท</th>
-            <th style="border:1px solid #000;padding:3px;">รหัส</th>
-            <th style="border:1px solid #000;padding:3px;">ชื่อวัตถุดิบ</th>
-            <th style="border:1px solid #000;padding:3px;">อัตราส่วน</th>
-            <th style="border:1px solid #000;padding:3px;">วันที่รับเข้า</th>
-            <th style="border:1px solid #000;padding:3px;">MFG / EXP</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="border:1px solid #000;padding:3px;">วัตถุดิบหลัก</td>
-            <td style="border:1px solid #000;padding:3px;">${rm1.code || '-'}</td>
-            <td style="border:1px solid #000;padding:3px;text-align:left;">${rm1.name || '-'}</td>
-            <td style="border:1px solid #000;padding:3px;">${rm1.ratio}%</td>
-            <td style="border:1px solid #000;padding:3px;">${rm1.recv || '-'}</td>
-            <td style="border:1px solid #000;padding:3px;">${rm1.mfg || '-'} / ${rm1.exp || '-'}</td>
-          </tr>
-          ${extras.map((ex, i) => `
-            <tr>
-              <td style="border:1px solid #000;padding:3px;">วัตถุดิบรอง ${i+2}</td>
-              <td style="border:1px solid #000;padding:3px;">${ex.code || '-'}</td>
-              <td style="border:1px solid #000;padding:3px;text-align:left;">${ex.name || '-'}</td>
-              <td style="border:1px solid #000;padding:3px;">${ex.ratio}%</td>
-              <td style="border:1px solid #000;padding:3px;">${ex.recv || '-'}</td>
-              // ✅ แก้ไขเป็น: <td style="border:1px solid #000;padding:3px;">${ex.mfg || '-'} / ${ex.exp || '-'}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-
-      <div style="font-size:14px;margin-bottom:8px;">
-        <b>ผลแล็บ Sugar Base:</b> Polarization: <u>${item.rawPolar || '-'}</u> °Z &nbsp;|&nbsp; Color: <u>${item.rawColor || '-'}</u> ICUMSA &nbsp;|&nbsp; Invert Sugar: <u>${item.rawInvert || '-'}</u> % &nbsp;|&nbsp; Ash: <u>${item.rawAsh || '0.015'}</u> %
+      <div style="border-top:1px solid #000;border-bottom:1px solid #000;padding:4px 0;margin:6px 0 8px;font-size:12.5px;">
+        <b>ข้อมูลวัตถุดิบ:</b> วันที่รับเข้าน้ำตาล: ${rm1.recv || '-'} &nbsp;|&nbsp; 
+        ${isWhite ? '[✓]' : '[&nbsp;]'} White Sugar &nbsp;
+        ${isRefined ? '[✓]' : '[&nbsp;]'} Refined Sugar &nbsp;
+        ${isBonsucro ? '[✓]' : '[&nbsp;]'} Bonsucro<br>
+        <b>ผลแล็บ Sugar Base:</b> 
+        Polarization: <u>${item.rawPolar || '-'}</u> °Z &nbsp;|&nbsp; 
+        Color: <u>${item.rawColor || '-'}</u> Icumsa &nbsp;|&nbsp; 
+        Invert Sugar: <u>${item.rawInvert || '-'}</u> %w/w
       </div>
 
-      <!-- ผลวิเคราะห์คุณภาพราย Batch -->
-      <div style="font-weight:700;font-size:15px;margin:6px 0 2px;">2. ผลการตรวจวิเคราะห์ทางห้องปฏิบัติการราย Batch (Particle Size &amp; Moisture)</div>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:8px;border:1px solid #000;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px;border:1px solid #000;">
         <thead>
           <tr style="background:#f2f2f2;">
-            <th style="border:1px solid #000;padding:3px;width:55px;">Batch</th>
-            <th style="border:1px solid #000;padding:3px;width:70px;">เวลา</th>
-            <th style="border:1px solid #000;padding:3px;width:95px;">Moisture (%)<br><small>(≤ 0.80%)</small></th>
-            <th style="border:1px solid #000;padding:3px;width:120px;">ผ่าน 180µ (%)<br><small>(≥ 95.0%)</small></th>
-            <th style="border:1px solid #000;padding:3px;width:120px;">ค้าง 180µ (%)<br><small>(≤ 5.0%)</small></th>
-            <th style="border:1px solid #000;padding:3px;width:80px;">การร่อนตะแกรง</th>
-            <th style="border:1px solid #000;padding:3px;width:70px;">ผลการตรวจ</th>
+            <th rowspan="3" style="border:1px solid #000;padding:2px;width:40px;">Batch</th>
+            <th rowspan="3" style="border:1px solid #000;padding:2px;width:45px;">จำนวน<br>(ถุง)</th>
+            <th rowspan="3" style="border:1px solid #000;padding:2px;width:50px;">เวลา</th>
+            <th colspan="5" style="border:1px solid #000;padding:2px;">รายการวิเคราะห์คุณภาพ</th>
+            <th colspan="2" style="border:1px solid #000;padding:2px;">การร่อนผ่านตะแกรง</th>
+            <th colspan="2" style="border:1px solid #000;padding:2px;">ผลการวิเคราะห์</th>
+            <th rowspan="3" style="border:1px solid #000;padding:2px;width:50px;">NCR No.</th>
+          </tr>
+          <tr style="background:#f2f2f2;">
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:60px;">Moisture<br>(&le;0.80%)</th>
+            <th colspan="4" style="border:1px solid #000;padding:2px;">Particle size (%)</th>
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:55px;">สิ่งแปลกปลอม</th>
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:55px;">สภาพตะแกรง</th>
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:35px;">ผ่าน</th>
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:38px;">ไม่ผ่าน</th>
+          </tr>
+          <tr style="background:#f2f2f2;">
+            <th style="border:1px solid #000;padding:2px;width:50px;">180&micro; ผ่าน</th>
+            <th style="border:1px solid #000;padding:2px;width:50px;">180&micro; ค้าง</th>
+            <th style="border:1px solid #000;padding:2px;width:40px;">-</th>
+            <th style="border:1px solid #000;padding:2px;width:45px;">ถาดล่าง</th>
           </tr>
         </thead>
         <tbody>
           ${item.batches.map(b => `
             <tr>
-              <td style="border:1px solid #000;padding:3px;">#${b.batchNo}</td>
-              <td style="border:1px solid #000;padding:3px;">${b.time || '-'}</td>
-              <td style="border:1px solid #000;padding:3px;">${b.moisture}%</td>
-              <td style="border:1px solid #000;padding:3px;">${b.partThrough}%</td>
-              <td style="border:1px solid #000;padding:3px;">${b.partRet}%</td>
-              <td style="border:1px solid #000;padding:3px;">${b.sieveCheck || 'ผ่าน'}</td>
-              <td style="border:1px solid #000;padding:3px;">ผ่าน</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.batchNo}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.amount}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.time || '-'}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.moisture}%</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.partThrough}%</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.partRet}%</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">-</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">-</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">✓</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">ปกติ</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">✓</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">-</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">-</td>
             </tr>
           `).join('')}
           <tr style="background:#fafafa;font-weight:700;">
-            <td colspan="2" style="border:1px solid #000;padding:4px;text-align:right;">ค่าเฉลี่ยทุกล็อต:</td>
-            <td style="border:1px solid #000;padding:4px;">${s.avgMoisture}%</td>
-            <td style="border:1px solid #000;padding:4px;">${s.avgThrough}%</td>
-            <td style="border:1px solid #000;padding:4px;">${s.avgRet}%</td>
-            <td colspan="2" style="border:1px solid #000;padding:4px;">ผ่านเกณฑ์มาตรฐาน</td>
+            <td colspan="3" style="border:1px solid #000;padding:3px;text-align:center;">สรุปผล</td>
+            <td style="border:1px solid #000;padding:3px;text-align:center;">${s.avgMoisture}%</td>
+            <td style="border:1px solid #000;padding:3px;text-align:center;">${s.avgThrough}%</td>
+            <td style="border:1px solid #000;padding:3px;text-align:center;">${s.avgRet}%</td>
+            <td colspan="4" style="border:1px solid #000;padding:3px;text-align:center;">ผ่านเกณฑ์มาตรฐาน</td>
+            <td style="border:1px solid #000;padding:3px;text-align:center;">✓</td>
+            <td style="border:1px solid #000;padding:3px;text-align:center;">-</td>
+            <td style="border:1px solid #000;padding:3px;text-align:center;">-</td>
           </tr>
         </tbody>
       </table>
 
-      <!-- ผลทางกายภาพ -->
-      <div style="font-weight:700;font-size:15px;margin:6px 0 2px;">3. ผลการตรวจลักษณะทางกายภาพ (Physical Test)</div>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px;border:1px solid #000;">
-        <tr>
-          <td style="padding:4px;border:1px solid #000;width:33%;"><b>ลักษณะปรากฏ (Appearance):</b> ${item.app || 'White Powder'}</td>
-          <td style="padding:4px;border:1px solid #000;width:33%;"><b>กลิ่น (Odor):</b> ${item.odor || 'No off odor'}</td>
-          <td style="padding:4px;border:1px solid #000;width:34%;"><b>รสชาติ (Taste):</b> ${item.taste || 'Sweet'}</td>
-        </tr>
-      </table>
+      <div style="font-size:12.5px;margin-bottom:6px;">
+        <b>Physical:</b> [✓] White Powder/White Crystal &nbsp;&nbsp;&nbsp; [✓] Sweet &nbsp;&nbsp;&nbsp; [✓] No off odor
+      </div>
+      <div style="font-size:11.5px;color:#333;margin-bottom:18px;">
+        <b>หมายเหตุ:</b> การตรวจสอบสิ่งแปลกปลอมในการร่อนผ่านตะแกรงให้ระบุเครื่องหมาย [✓] กรณี "ผ่าน/ไม่พบสิ่งแปลกปลอม" หรือ [X] กรณี "ไม่ผ่าน/พบสิ่งแปลกปลอม"
+      </div>
 
-      <div style="display:flex;justify-content:space-between;font-size:15px;text-align:center;margin-top:24px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;text-align:center;margin-top:20px;">
         <div style="width:45%;">
           ผู้วิเคราะห์............................................................<br>
-          ( ${item.rep || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )<br>
-          <span style="font-size:13px;">เจ้าหน้าที่วิเคราะห์คุณภาพ (QA Officer)</span>
+          ( ${item.rep || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )<br>
+          <span style="font-size:12px;">เจ้าหน้าที่/ผช.หัวหน้าฝ่ายประกันคุณภาพ</span>
         </div>
         <div style="width:45%;">
-          ผู้ทวนสอบ/อนุมัติ............................................................<br>
-          ( ${item.appr || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )<br>
-          <span style="font-size:13px;">ผู้ช่วย/หัวหน้าฝ่ายประกันคุณภาพ (QA Manager)</span>
+          ผู้ทวนสอบ............................................................<br>
+          ( ${item.appr || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )<br>
+          <span style="font-size:12px;">หัวหน้าฝ่ายประกันคุณภาพ</span>
         </div>
       </div>
     </div>
@@ -1508,258 +1529,136 @@ function printQA24(index){
   window.print();
 }
 
-// ----------------------------------------------------
-// 2. พิมพ์รายงานการตรวจสอบการบรรจุ (FM-QA-19 Rev.02)
-// ----------------------------------------------------
+// ====================================================
+// 2. พิมพ์ FM-QA-19 Rev.02 ตามแบบฟอร์ม PDF จริง
+// ====================================================
 function printPackagingReport(index){
   const item = getQCData()[index];
   if(!item) return;
   const p = item.pkg || {};
   const s = item.summary;
 
+  const isIcing = item.prod.includes('Icing Sugar');
+  const isSM = item.prod.includes('Sugar Milled');
+  const isCS = item.prod.includes('Caster Sugar');
+  const isGS = item.prod.includes('Ground Sugar');
+  const isOther = !isIcing && !isSM && !isCS && !isGS;
+
   document.getElementById('printArea').innerHTML = `
-    <div class="print-container">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="border:2px solid #1F4B49;border-radius:4px;padding:2px 6px;text-align:center;line-height:1;color:#1F4B49;">
-            <div style="font-weight:900;font-size:18px;letter-spacing:1px;">PGI</div>
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;">International</div>
+    <div class="print-container" style="font-size:13px;line-height:1.25;color:#000;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #000;padding-bottom:4px;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="border:2px solid #1F4B49;border-radius:4px;padding:2px 5px;text-align:center;line-height:1;color:#1F4B49;">
+            <div style="font-weight:900;font-size:16px;">PGI</div>
+            <div style="font-size:8px;font-weight:700;">International</div>
           </div>
           <div>
-            <div style="font-weight:700;font-size:18px;color:#000;">บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชั่นแนล จำกัด</div>
-            <div style="font-weight:600;font-size:16px;color:#111;">PGI FOODS INTERNATIONAL COMPANY LIMITED</div>
+            <div style="font-weight:700;font-size:16px;">บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชั่นแนล จำกัด</div>
+            <div style="font-weight:600;font-size:13px;">PGI FOODS INTERNATIONAL COMPANY LIMITED</div>
           </div>
         </div>
-        <div style="font-size:14px;font-weight:600;white-space:nowrap;padding-top:2px;">FM-QA-19 Rev.02, 01/08/2025</div>
+        <div style="font-weight:700;font-size:12px;text-align:right;">FM-QA-19 Rev.02, 01/08/2025</div>
       </div>
 
-      <div style="text-align:center;font-weight:700;font-size:20px;margin:8px 0 8px;">รายงานการตรวจสอบการบรรจุผลิตภัณฑ์</div>
+      <div style="text-align:center;font-weight:700;font-size:17px;margin:4px 0 10px;">รายงานการตรวจสอบการบรรจุผลิตภัณฑ์</div>
 
-      <table style="width:100%;border-collapse:collapse;font-size:15px;margin-bottom:8px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px;">
         <tr>
-          <td style="padding:2px 0;"><b>วันที่ผลิต:</b> ${item.mfg}</td>
-          <td style="padding:2px 0;"><b>ผลิตภัณฑ์:</b> [✓] ${item.prod}</td>
-          <td style="padding:2px 0;"><b>Customer:</b> ${item.cust || '-'}</td>
+          <td style="width:50%;padding:2px 0;"><b>วันที่ผลิต:</b> ${item.mfg}</td>
+          <td style="width:50%;padding:2px 0;"><b>Customer:</b> ${item.cust || '-'}</td>
         </tr>
         <tr>
-          <td style="padding:2px 0;"><b>Lot No.:</b> ${item.lot}</td>
+          <td colspan="2" style="padding:2px 0;">
+            <b>ผลิตภัณฑ์:</b> 
+            ${isIcing ? '[✓]' : '[&nbsp;]'} Icing Sugar &nbsp;&nbsp;
+            ${isSM ? '[✓]' : '[&nbsp;]'} Sugar Milled 40s &nbsp;&nbsp;
+            ${isCS ? '[✓]' : '[&nbsp;]'} Caster Sugar 30s &nbsp;&nbsp;
+            ${isGS ? '[✓]' : '[&nbsp;]'} Ground Sugar &nbsp;&nbsp;
+            ${isOther ? `[✓] Other: ${item.prod}` : '[&nbsp;] Other'}
+          </td>
+        </tr>
+        <tr>
           <td style="padding:2px 0;"><b>จำนวนที่ผลิต:</b> ${s.totalBags} ถุง (${s.totalMT} MT)</td>
-          <td style="padding:2px 0;"><b>วันที่จัดส่ง:</b> ${item.deliv ? item.deliv : '-'}</td>
+          <td style="padding:2px 0;"><b>Lot No.:</b> ${item.lot}</td>
         </tr>
         <tr>
-          <td style="padding:2px 0;" colspan="3">
-            <b>ชนิดบรรจุภัณฑ์ชั้นใน:</b> ${p.inner || '-'} &nbsp;&nbsp;&nbsp;&nbsp; 
-            <b>ชนิดบรรจุภัณฑ์ชั้นนอก:</b> ${p.outer || '-'} &nbsp;&nbsp;&nbsp;&nbsp; 
+          <td style="padding:2px 0;"><b>ชนิดบรรจุภัณฑ์ชั้นใน:</b> ${p.inner || '-'}</td>
+          <td style="padding:2px 0;"><b>วันที่จัดส่ง:</b> ${item.deliv || '-'}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:2px 0;">
+            <b>ชนิดบรรจุภัณฑ์ชั้นนอก:</b> ${p.outer || '-'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <b>สีด้าย:</b> ${p.thread || '-'}
           </td>
         </tr>
       </table>
 
-      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:8px;border:1px solid #000;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px;border:1px solid #000;">
         <thead>
           <tr style="background:#f2f2f2;">
-            <th rowspan="2" style="border:1px solid #000;padding:3px;width:55px;">Batch</th>
-            <th colspan="5" style="border:1px solid #000;padding:3px;">น้ำหนักผลิตภัณฑ์รวมบรรจุภัณฑ์ชั้นใน (Kg)</th>
-            <th rowspan="2" style="border:1px solid #000;padding:3px;width:65px;">จำนวนที่ได้<br>(ถุง)</th>
-            <th rowspan="2" style="border:1px solid #000;padding:3px;width:60px;">สภาพ<br>บรรจุภัณฑ์</th>
-            <th rowspan="2" style="border:1px solid #000;padding:3px;width:65px;">รายละเอียด<br>ฉลาก</th>
-            <th rowspan="2" style="border:1px solid #000;padding:3px;width:65px;">สีด้ายเย็บ</th>
-            <th colspan="2" style="border:1px solid #000;padding:3px;width:70px;">ผลการตรวจสอบ</th>
-            <th rowspan="2" style="border:1px solid #000;padding:3px;width:65px;">หมายเลข<br>เครื่องชั่ง</th>
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:40px;">Batch</th>
+            <th colspan="5" style="border:1px solid #000;padding:2px;">น้ำหนักผลิตภัณฑ์รวมบรรจุภัณฑ์ชั้นใน (Kg)</th>
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:55px;">จำนวนที่ได้<br>(ถุง)</th>
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:55px;">สภาพ<br>บรรจุภัณฑ์</th>
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:55px;">รายละเอียด<br>ฉลาก</th>
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:55px;">สีด้ายเย็บ</th>
+            <th colspan="2" style="border:1px solid #000;padding:2px;width:70px;">ผลการตรวจสอบ</th>
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:60px;">หมายเลข<br>เครื่องชั่ง</th>
+            <th rowspan="2" style="border:1px solid #000;padding:2px;width:50px;">หมายเหตุ</th>
           </tr>
           <tr style="background:#f2f2f2;">
-            <th style="border:1px solid #000;padding:2px;width:45px;">#1</th>
-            <th style="border:1px solid #000;padding:2px;width:45px;">#2</th>
-            <th style="border:1px solid #000;padding:2px;width:45px;">#3</th>
-            <th style="border:1px solid #000;padding:2px;width:45px;">#4</th>
-            <th style="border:1px solid #000;padding:2px;width:45px;">#5</th>
+            <th style="border:1px solid #000;padding:2px;width:42px;">#1</th>
+            <th style="border:1px solid #000;padding:2px;width:42px;">#2</th>
+            <th style="border:1px solid #000;padding:2px;width:42px;">#3</th>
+            <th style="border:1px solid #000;padding:2px;width:42px;">#4</th>
+            <th style="border:1px solid #000;padding:2px;width:42px;">#5</th>
             <th style="border:1px solid #000;padding:2px;width:35px;">ผ่าน</th>
             <th style="border:1px solid #000;padding:2px;width:35px;">ไม่ผ่าน</th>
           </tr>
         </thead>
         <tbody>
-          ${item.batches.map(function(b){
-            return `
-              <tr>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">#${b.batchNo}</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.w1||'-'}</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.w2||'-'}</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.w3||'-'}</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.w4||'-'}</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.w5||'-'}</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.amount}</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.packCheck==='ผ่าน'?'✓':'X'}</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.labelCheck==='ผ่าน'?'✓':'X'}</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">${b.threadCheck==='ผ่าน'?'✓':'X'}</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">✓</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">-</td>
-                <td style="border:1px solid #000;padding:3px;text-align:center;">${p.scale||'-'}</td>
-              </tr>
-            `;
-          }).join('')}
+          ${item.batches.map(b => `
+            <tr>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.batchNo}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.w1 || '-'}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.w2 || '-'}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.w3 || '-'}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.w4 || '-'}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.w5 || '-'}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.amount}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.packCheck === 'ผ่าน' ? '✓' : 'X'}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.labelCheck === 'ผ่าน' ? '✓' : 'X'}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${b.threadCheck === 'ผ่าน' ? '✓' : 'X'}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">✓</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">-</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">${p.scale || '-'}</td>
+              <td style="border:1px solid #000;padding:2px;text-align:center;">-</td>
+            </tr>
+          `).join('')}
         </tbody>
       </table>
 
-      <div style="font-size:13px;color:#222;line-height:1.25;margin-bottom:16px;">
+      <div style="font-size:11px;color:#222;line-height:1.2;margin-bottom:16px;">
         <b>หมายเหตุ:</b><br>
         1. น้ำหนักผลิตภัณฑ์รวมกับบรรจุภัณฑ์ชั้นใน, ขนาด 10 Kg (10.06 Kg), ขนาด 15 Kg (15.06 Kg), ขนาด 25 Kg (25.08 Kg), ขนาด 30 Kg (30.25Kg), ขนาด 40 Kg (40.18 Kg) และ Paper Bag Icing 25 Kg (25.30 Kg)<br>
         2. การตรวจสอบสภาพบรรจุภัณฑ์ สะอาดปราศจากสิ่งปนเปื้อน ไม่ฉีกขาด รอยเย็บเรียบร้อย ไม่เปียกชื้น ไม่มีรอยเปื้อน ความถูกต้องของชนิดบรรจุภัณฑ์ และสีด้ายเย็บ กรณีที่เป็นกล่องต้องไม่บุบหรือยุบตัว<br>
         3. การตรวจสอบรายละเอียดบนฉลาก ชื่อผลิตภัณฑ์ น้ำหนักสุทธิ วันเดือนปีที่ผลิตและหมดอายุของผลิตภัณฑ์<br>
-        4. ระบุเครื่องหมาย ✓ หมายถึง ถูกต้อง ยอมรับ หรือเครื่องหมาย X หมายถึง ไม่ถูกต้อง ไม่ยอมรับ
+        4. ระบุเครื่องหมาย [✓] หมายถึง ถูกต้อง ยอมรับ หรือเครื่องหมาย [X] หมายถึง ไม่ถูกต้อง ไม่ยอมรับ
       </div>
 
-      <div style="display:flex;justify-content:space-between;font-size:15px;text-align:center;margin-top:16px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;text-align:center;margin-top:16px;">
         <div style="width:45%;">
           ผู้ตรวจสอบ............................................................<br>
-          ( ${item.rep || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )<br>
-          <span style="font-size:13px;">เจ้าหน้าที่/ผช.หัวหน้าฝ่ายประกันคุณภาพ</span>
+          ( ${item.rep || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )<br>
+          <span style="font-size:12px;">เจ้าหน้าที่/ผช.หัวหน้าฝ่ายประกันคุณภาพ</span>
         </div>
         <div style="width:45%;">
           ผู้ทวนสอบ............................................................<br>
-          ( ${item.appr || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )<br>
-          <span style="font-size:13px;">หัวหน้าฝ่ายประกันคุณภาพ</span>
+          ( ${item.appr || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )<br>
+          <span style="font-size:12px;">หัวหน้าฝ่ายประกันคุณภาพ</span>
         </div>
       </div>
     </div>
   `;
   window.print();
 }
-
-// ----------------------------------------------------
-// 3. พิมพ์ COA (FM-QA-25 Rev.01)
-// ----------------------------------------------------
-function printCOA(index){
-  const item = getQCData()[index];
-  if(!item) return;
-  const s = item.summary;
-  const p = item.pkg || {};
-
-  document.getElementById('printArea').innerHTML = `
-    <div class="print-container">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="border:2px solid #1F4B49;border-radius:4px;padding:2px 6px;text-align:center;line-height:1;color:#1F4B49;">
-            <div style="font-weight:900;font-size:18px;letter-spacing:1px;">PGI</div>
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;">International</div>
-          </div>
-          <div>
-            <div style="font-weight:700;font-size:18px;color:#000;">บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชั่นแนล จำกัด</div>
-            <div style="font-weight:600;font-size:16px;color:#111;">PGI FOODS INTERNATIONAL COMPANY LIMITED</div>
-            <div style="font-size:14px;color:#333;">16/1 Soi Bangkradee 23 Samaedam Bangkhunthian Bangkok 10150 Tel 0-2452-2934 Fax 0-2452-2935</div>
-          </div>
-        </div>
-        <div style="font-size:14px;font-weight:600;white-space:nowrap;padding-top:2px;">FM-QA-25 Rev.01, 01/07/2025</div>
-      </div>
-
-      <div style="text-align:center;font-weight:700;font-style:italic;font-size:22px;margin:10px 0 2px;">Certificate Of Analysis</div>
-      <div style="text-align:center;font-weight:700;font-style:italic;font-size:18px;margin-bottom:10px;">${item.prod}</div>
-      
-      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:15px;border:1px solid #000;">
-        <tr>
-          <td style="padding:4px 6px;border:1px solid #000;width:50%;background:#f9f9f9;"><b>Producer Information</b></td>
-          <td style="padding:4px 6px;border:1px solid #000;width:50%;background:#f9f9f9;"><b>Customer Information</b></td>
-        </tr>
-        <tr>
-          <td style="padding:3px 6px;border:1px solid #000;">Quantity Received&nbsp;&nbsp;&nbsp;&nbsp;${s.totalMT} MT</td>
-          <td style="padding:3px 6px;border:1px solid #000;">Delivery Date&nbsp;&nbsp;&nbsp;&nbsp;${item.deliv ? item.deliv : ''}</td>
-        </tr>
-        <tr>
-          <td style="padding:3px 6px;border:1px solid #000;">Production Date&nbsp;&nbsp;&nbsp;&nbsp;${item.mfg}</td>
-          <td style="padding:3px 6px;border:1px solid #000;">Customer&nbsp;&nbsp;&nbsp;&nbsp;${item.cust || ''}</td>
-        </tr>
-        <tr>
-          <td style="padding:3px 6px;border:1px solid #000;">Expire Date&nbsp;&nbsp;&nbsp;&nbsp;${item.exp || ''}</td>
-          <td style="padding:3px 6px;border:1px solid #000;">Quantity&nbsp;&nbsp;&nbsp;&nbsp;${(parseFloat(s.totalMT)*1000).toLocaleString()} Kg.</td>
-        </tr>
-        <tr>
-          <td style="padding:3px 6px;border:1px solid #000;">Lot No.&nbsp;&nbsp;&nbsp;&nbsp;${item.lot}</td>
-          <td style="padding:3px 6px;border:1px solid #000;">Net Weight (per bag)&nbsp;&nbsp;&nbsp;&nbsp;${s.netSpec} Kg.</td>
-        </tr>
-        <tr>
-          <td style="padding:3px 6px;border:1px solid #000;">Date received to warehouse (Raw Material)&nbsp;&nbsp;&nbsp;&nbsp;${item.ingredients?.rm1?.recv || item.mfg}</td>
-          <td style="padding:3px 6px;border:1px solid #000;">Amount&nbsp;&nbsp;&nbsp;&nbsp;${s.totalBags} Bags</td>
-        </tr>
-      </table>
-
-      <table style="width:100%;border-collapse:collapse;font-size:15px;margin-bottom:8px;border:1px solid #000;">
-        <thead>
-          <tr style="background:#f2f2f2;">
-            <th style="border:1px solid #000;padding:4px;width:38%;text-align:left;">Item</th>
-            <th style="border:1px solid #000;padding:4px;width:28%;text-align:left;">Specification</th>
-            <th style="border:1px solid #000;padding:4px;width:20%;text-align:center;">Analysis Result</th>
-            <th style="border:1px solid #000;padding:4px;width:14%;text-align:center;">Unit</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td style="border:1px solid #000;padding:3px 6px;">Appearance</td><td style="border:1px solid #000;padding:3px 6px;">White Powder</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.app}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">-</td></tr>
-          <tr><td style="border:1px solid #000;padding:3px 6px;">Odor</td><td style="border:1px solid #000;padding:3px 6px;">No off odor</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.odor}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">-</td></tr>
-          <tr><td style="border:1px solid #000;padding:3px 6px;">Taste</td><td style="border:1px solid #000;padding:3px 6px;">Sweet</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.taste}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">-</td></tr>
-          <tr><td style="border:1px solid #000;padding:3px 6px;">Moisture</td><td style="border:1px solid #000;padding:3px 6px;">≤ 0.80 %</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${s.avgMoisture}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">%</td></tr>
-          <tr><td style="border:1px solid #000;padding:3px 6px;">Polarization</td><td style="border:1px solid #000;padding:3px 6px;">≥ 95 Degree °Z</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.rawPolar}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">Degree °Z</td></tr>
-          <tr><td style="border:1px solid #000;padding:3px 6px;">Color</td><td style="border:1px solid #000;padding:3px 6px;">≤ 60 Icumsa</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.rawColor}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">Icumsa</td></tr>
-          <tr><td style="border:1px solid #000;padding:3px 6px;">Invert Sugar</td><td style="border:1px solid #000;padding:3px 6px;">≤ 0.04 % w/w</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.rawInvert}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">% w/w</td></tr>
-          <tr><td style="border:1px solid #000;padding:3px 6px;">Conductivity Ash</td><td style="border:1px solid #000;padding:3px 6px;">≤ 0.04 %</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">${item.rawAsh || '0.015'}</td><td style="border:1px solid #000;padding:3px 6px;text-align:center;">%</td></tr>
-          <tr>
-            <td rowspan="3" style="border:1px solid #000;padding:3px 6px;vertical-align:top;"><b>Particle Size</b></td>
-            <td colspan="3" style="border:1px solid #000;padding:3px 6px;background:#fafafa;"><i>Sieve Analysis Testing</i></td>
-          </tr>
-          <tr>
-            <td style="border:1px solid #000;padding:3px 6px;padding-left:14px;">Through sieve 180 microns (≥ 95%)</td>
-            <td style="border:1px solid #000;padding:3px 6px;text-align:center;">${s.avgThrough}</td>
-            <td style="border:1px solid #000;padding:3px 6px;text-align:center;">%</td>
-          </tr>
-          <tr>
-            <td style="border:1px solid #000;padding:3px 6px;padding-left:14px;">Retained sieve 180 microns (≤ 5%)</td>
-            <td style="border:1px solid #000;padding:3px 6px;text-align:center;">${s.avgRet}</td>
-            <td style="border:1px solid #000;padding:3px 6px;text-align:center;">%</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:14px;border:1px solid #000;">
-        <thead>
-          <tr style="background:#f2f2f2;">
-            <th colspan="2" style="border:1px solid #000;padding:3px 6px;text-align:left;"><b>Packaging &amp; Labeling Inspection (Ref. FM-QA-19)</b></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="border:1px solid #000;padding:3px 6px;width:50%;">• Primary Packaging: ${p.inner || '-'}</td>
-            <td style="border:1px solid #000;padding:3px 6px;width:50%;">• Package Condition: Clean, Undamaged, Sealed completely (Passed)</td>
-          </tr>
-          <tr>
-            <td style="border:1px solid #000;padding:3px 6px;">• Secondary Packaging: ${p.outer || '-'}</td>
-            <td style="border:1px solid #000;padding:3px 6px;">• Label &amp; Thread: Correct details, Thread color (${p.thread || '-'})</td>
-          </tr>
-          <tr>
-            <td style="border:1px solid #000;padding:3px 6px;">• Average Gross Weight (รวมถุงใน): ${s.avgGross} Kg.</td>
-            <td style="border:1px solid #000;padding:3px 6px;">• Scale ID: ${p.scale || '-'}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div style="display:flex;justify-content:space-between;margin-top:20px;font-size:15px;text-align:center;">
-        <div style="width:45%;">
-          Report By............................................................<br>
-          ( ${item.rep || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )
-        </div>
-        <div style="width:45%;">
-          Approved By............................................................<br>
-          ( ${item.appr || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )
-        </div>
-      </div>
-
-      <div style="margin-top:20px;padding-top:6px;border-top:1px solid #777;text-align:center;font-size:13.5px;color:#222;line-height:1.35;">
-        <div style="font-weight:700;">บริษัท พีจีไอ ฟู้ดส์ อินเตอร์เนชั่นแนล จำกัด</div>
-        <div>16/1 ซอยบางกระดี่ 23 แขวงแสมดำ เขตบางขุนเทียน กรุงเทพ 10150</div>
-        <div>โทรศัพท์ 0-2452-2934 แฟกซ์ 0-2452-2935</div>
-      </div>
-    </div>
-  `;
-  window.print();
-}
-
-render();
-</script>
-</body>
-</html>
